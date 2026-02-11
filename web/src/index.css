@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,93 +9,141 @@
     scrollbar-width: thin;
     scrollbar-color: #1e293b transparent;
   }
-  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
     background: #1e293b;
     border-radius: 3px;
   }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a3654;
+  }
+
+  html {
+    font-family: "Manrope", system-ui, sans-serif;
+    color: #e8eaed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
   body {
-    background: #06080f;
+    background: #0a0e1a;
     min-height: 100vh;
   }
 
-  /* Noise texture overlay */
+  /* Subtle grid pattern */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: 0;
     pointer-events: none;
-    opacity: 0.03;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Outfit", system-ui, sans-serif;
   }
 }
 
 @layer components {
-  .glass {
-    background: linear-gradient(135deg, rgba(19, 24, 41, 0.8), rgba(12, 16, 32, 0.6));
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(30, 41, 59, 0.5);
+  /* Card system */
+  .card {
+    background: linear-gradient(135deg, #111827 0%, #0f1524 100%);
+    border: 1px solid #1e293b;
+    border-radius: 12px;
   }
 
-  .glass-hover:hover {
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.08);
+  .card-hover {
+    transition: all 0.25s ease;
+  }
+  .card-hover:hover {
+    border-color: #2a3654;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(42, 54, 84, 0.3);
+    transform: translateY(-1px);
   }
 
-  .gradient-text {
-    background: linear-gradient(135deg, #60a5fa, #3b82f6, #818cf8);
+  .card-glow:hover {
+    border-color: rgba(6, 214, 160, 0.25);
+    box-shadow: 0 4px 32px rgba(6, 214, 160, 0.06), 0 0 0 1px rgba(6, 214, 160, 0.1);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply px-6 py-3 rounded-lg font-semibold text-sm font-body
+      bg-brand text-base-950
+      hover:bg-brand-light
+      transition-all duration-200
+      active:scale-[0.98]
+      shadow-lg shadow-brand/20;
+  }
+
+  .btn-secondary {
+    @apply px-5 py-2.5 rounded-lg font-medium text-sm font-body
+      bg-base-600 text-txt border border-line
+      hover:bg-base-500 hover:border-line-light
+      transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 rounded-lg text-sm font-medium font-body
+      text-txt-secondary hover:text-txt hover:bg-base-700
+      transition-all duration-200;
+  }
+
+  /* Input */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg bg-base-800 border border-line
+      text-txt placeholder-txt-muted font-body
+      focus:border-brand/50 focus:ring-1 focus:ring-brand/20
+      outline-none transition-all duration-200;
+  }
+
+  /* Chips/tags */
+  .chip {
+    @apply px-4 py-2 rounded-lg text-sm font-medium font-body
+      transition-all duration-200 cursor-pointer select-none;
+  }
+
+  .chip-active {
+    @apply bg-brand/15 text-brand border border-brand/30;
+  }
+
+  .chip-inactive {
+    @apply bg-base-700 text-txt-secondary border border-transparent
+      hover:text-txt hover:bg-base-600;
+  }
+
+  /* Status badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium font-body;
+  }
+  .badge-open { @apply bg-yes/10 text-yes; }
+  .badge-closed { @apply bg-amber/10 text-amber; }
+  .badge-resolved { @apply bg-brand/10 text-brand; }
+  .badge-cancelled { @apply bg-base-500 text-txt-muted; }
+
+  /* Gradient text */
+  .text-gradient {
+    background: linear-gradient(135deg, #06d6a0, #34edc1, #06d6a0);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .btn-primary {
-    @apply px-6 py-3 rounded-xl font-semibold text-sm
-      bg-gradient-to-r from-accent to-blue-600
-      hover:from-accent-light hover:to-blue-500
-      transition-all duration-200 shadow-lg shadow-accent/20
-      active:scale-[0.98];
+  /* Section container */
+  .container-site {
+    @apply max-w-site mx-auto px-4 sm:px-6 lg:px-8 xl:px-12;
   }
 
-  .btn-ghost {
-    @apply px-4 py-2 rounded-lg text-sm font-medium
-      text-muted hover:text-white hover:bg-surface-3
-      transition-all duration-200;
+  /* Shimmer loading */
+  .shimmer {
+    background: linear-gradient(90deg, #111827 25%, #1a2236 50%, #111827 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
   }
-
-  .input-field {
-    @apply w-full px-4 py-3 rounded-xl bg-surface-2 border border-border
-      text-white placeholder-muted
-      focus:border-accent/50 focus:ring-1 focus:ring-accent/20
-      outline-none transition-all duration-200;
-  }
-
-  .stat-card {
-    @apply glass rounded-2xl p-5;
-  }
-
-  .chip {
-    @apply px-3 py-1.5 rounded-full text-xs font-medium
-      transition-all duration-200 cursor-pointer select-none;
-  }
-
-  .chip-active {
-    @apply bg-accent/20 text-accent border border-accent/30;
-  }
-
-  .chip-inactive {
-    @apply bg-surface-3 text-muted border border-transparent hover:text-white;
-  }
-}
-
-@layer utilities {
-  .stagger-1 { animation-delay: 0.05s; }
-  .stagger-2 { animation-delay: 0.1s; }
-  .stagger-3 { animation-delay: 0.15s; }
-  .stagger-4 { animation-delay: 0.2s; }
-  .stagger-5 { animation-delay: 0.25s; }
-  .stagger-6 { animation-delay: 0.3s; }
 }

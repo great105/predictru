@@ -15,6 +15,16 @@ function timeLeft(closes: string): string {
   return `${hours} ч ${mins} мин`;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  general: "Общее",
+  sports: "Спорт",
+  crypto: "Крипто",
+  politics: "Политика",
+  tech: "Технологии",
+  entertainment: "Развлечения",
+  science: "Наука",
+};
+
 export default function MarketPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -22,19 +32,30 @@ export default function MarketPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4 animate-pulse">
-        <div className="h-8 bg-surface-3 rounded w-1/2" />
-        <div className="h-4 bg-surface-3 rounded w-full" />
-        <div className="h-64 bg-surface-3 rounded-2xl" />
+      <div className="space-y-6 animate-pulse">
+        <div className="h-5 shimmer rounded w-24" />
+        <div className="h-8 shimmer rounded w-2/3" />
+        <div className="h-4 shimmer rounded w-full" />
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="lg:col-span-3 h-80 shimmer rounded-xl" />
+          <div className="lg:col-span-2 h-96 shimmer rounded-xl" />
+        </div>
       </div>
     );
   }
 
   if (!market) {
     return (
-      <div className="text-center py-20">
-        <p className="text-muted">Рынок не найден</p>
-        <button onClick={() => navigate("/")} className="btn-ghost mt-4">На главную</button>
+      <div className="text-center py-24">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-base-700 flex items-center justify-center">
+          <svg className="w-8 h-8 text-txt-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+        </div>
+        <p className="text-txt-secondary font-medium">Рынок не найден</p>
+        <button onClick={() => navigate("/")} className="btn-ghost mt-4">
+          На главную
+        </button>
       </div>
     );
   }
@@ -44,94 +65,108 @@ export default function MarketPage() {
   const isClob = market.amm_type === "clob";
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-0">
-      {/* Back button */}
-      <button
-        onClick={() => navigate(-1)}
-        className="btn-ghost inline-flex items-center gap-1 -ml-2"
-      >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+    <div className="space-y-6 pb-10">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm">
+        <button
+          onClick={() => navigate("/")}
+          className="text-txt-muted hover:text-brand transition-colors"
+        >
+          Рынки
+        </button>
+        <svg className="w-3.5 h-3.5 text-txt-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
         </svg>
-        Назад
-      </button>
+        <span className="text-txt-secondary truncate max-w-xs">{market.title}</span>
+      </div>
 
-      {/* Market header */}
+      {/* Market header card */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass rounded-2xl p-6"
+        className="card p-6 lg:p-8"
       >
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div>
-            <h1 className="text-xl lg:text-2xl font-bold leading-snug">{market.title}</h1>
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
+          <div className="flex-1 min-w-0">
+            {/* Tags row */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-medium text-txt-muted bg-base-600 px-2.5 py-1 rounded-md">
+                {CATEGORY_LABELS[market.category] ?? market.category}
+              </span>
+              {isClob && (
+                <span className="text-[10px] font-mono text-amber bg-amber/10 px-2 py-0.5 rounded-md">CLOB</span>
+              )}
+              <span
+                className={`badge ${
+                  market.status === "open"
+                    ? "badge-open"
+                    : market.status === "resolved"
+                      ? "badge-resolved"
+                      : "badge-closed"
+                }`}
+              >
+                {market.status === "open" ? "Активен" : market.status === "resolved" ? "Решён" : "Закрыт"}
+              </span>
+            </div>
+
+            <h1 className="text-2xl lg:text-3xl font-display font-bold leading-snug">
+              {market.title}
+            </h1>
             {market.description && (
-              <p className="text-sm text-muted mt-2 leading-relaxed">{market.description}</p>
+              <p className="text-sm text-txt-secondary mt-3 leading-relaxed max-w-2xl">
+                {market.description}
+              </p>
             )}
-          </div>
-          <div className="flex flex-col items-end gap-1.5 shrink-0">
-            <span
-              className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${
-                market.status === "open"
-                  ? "bg-yes/10 text-yes"
-                  : market.status === "resolved"
-                    ? "bg-accent/10 text-accent"
-                    : "bg-surface-4 text-muted"
-              }`}
-            >
-              {market.status === "open" ? "Активен" : market.status === "resolved" ? "Решён" : market.status}
-            </span>
-            {isClob && <span className="text-[10px] font-mono text-muted bg-surface-4 px-2 py-0.5 rounded">CLOB</span>}
           </div>
         </div>
 
         {/* Resolution badge */}
         {market.resolution_outcome && (
-          <div className={`mb-4 p-3 rounded-xl text-sm font-medium ${
+          <div className={`mb-6 p-4 rounded-xl text-sm font-semibold flex items-center gap-3 ${
             market.resolution_outcome === "yes"
               ? "bg-yes/10 text-yes border border-yes/20"
               : "bg-no/10 text-no border border-no/20"
           }`}>
+            <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             Исход: {market.resolution_outcome === "yes" ? "ДА" : "НЕТ"}
           </div>
         )}
 
         {/* Big price display */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="bg-surface-2 rounded-xl p-4 text-center border border-yes/10">
-            <p className="text-3xl font-bold font-mono text-yes">{yesPercent}%</p>
-            <p className="text-xs text-muted mt-1">Да</p>
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-base-800 rounded-xl p-5 text-center border border-yes/10 hover:border-yes/25 transition-colors">
+            <p className="text-4xl lg:text-5xl font-bold font-mono text-yes">{yesPercent}%</p>
+            <p className="text-xs text-txt-muted mt-2 font-medium">Да</p>
           </div>
-          <div className="bg-surface-2 rounded-xl p-4 text-center border border-no/10">
-            <p className="text-3xl font-bold font-mono text-no">{noPercent}%</p>
-            <p className="text-xs text-muted mt-1">Нет</p>
+          <div className="bg-base-800 rounded-xl p-5 text-center border border-no/10 hover:border-no/25 transition-colors">
+            <p className="text-4xl lg:text-5xl font-bold font-mono text-no">{noPercent}%</p>
+            <p className="text-xs text-txt-muted mt-2 font-medium">Нет</p>
           </div>
         </div>
 
         {/* Stats row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: "Объём", value: `${Number(market.total_volume).toLocaleString("ru-RU")} PRC`, icon: "💰" },
-            { label: "Трейдеры", value: market.total_traders, icon: "👥" },
-            { label: "Закрытие", value: timeLeft(market.closes_at), icon: "⏱️" },
-            { label: "Тип", value: isClob ? "Ордерная книга" : "LMSR AMM", icon: "⚙️" },
+            { label: "Объём торгов", value: `${Number(market.total_volume).toLocaleString("ru-RU")} PRC` },
+            { label: "Трейдеры", value: String(market.total_traders) },
+            { label: "Закрытие", value: timeLeft(market.closes_at) },
+            { label: "Тип маркета", value: isClob ? "Ордерная книга" : "LMSR AMM" },
           ].map((stat) => (
-            <div key={stat.label} className="bg-surface-2 rounded-lg px-3 py-2.5">
-              <p className="text-[10px] text-muted">{stat.icon} {stat.label}</p>
-              <p className="text-sm font-mono font-medium mt-0.5">{stat.value}</p>
+            <div key={stat.label} className="bg-base-800 rounded-lg px-4 py-3 border border-line">
+              <p className="text-[10px] text-txt-muted uppercase tracking-wider font-medium">{stat.label}</p>
+              <p className="text-sm font-mono font-semibold mt-1 text-txt">{stat.value}</p>
             </div>
           ))}
         </div>
       </motion.div>
 
-      {/* Two-column layout on desktop */}
+      {/* Two-column layout: Chart (left) + Trading (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Left: Chart + info (3 cols) */}
         <div className="lg:col-span-3 space-y-6">
           <PriceChart marketId={market.id} />
         </div>
-
-        {/* Right: Trading panel (2 cols) */}
         <div className="lg:col-span-2 space-y-6">
           {market.status === "open" && (
             isClob

@@ -15,11 +15,10 @@ interface Props {
   cornerRadius?: number;
 }
 
-export default function TelegramLogin({ botName, onAuth, buttonSize = "large", cornerRadius = 14 }: Props) {
+export default function TelegramLogin({ botName, onAuth, buttonSize = "large", cornerRadius = 8 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Expose callback globally for Telegram widget
     (window as any).onTelegramAuth = (user: any) => {
       onAuth(user);
     };
@@ -43,5 +42,5 @@ export default function TelegramLogin({ botName, onAuth, buttonSize = "large", c
     };
   }, [botName, onAuth, buttonSize, cornerRadius]);
 
-  return <div ref={containerRef} className="flex justify-center" />;
+  return <div ref={containerRef} />;
 }

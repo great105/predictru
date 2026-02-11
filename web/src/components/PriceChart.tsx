@@ -13,16 +13,27 @@ export default function PriceChart({ marketId }: { marketId: string }) {
 
   if (isLoading) {
     return (
-      <div className="glass rounded-2xl p-5 h-64 flex items-center justify-center">
-        <div className="animate-pulse text-muted text-sm">Загрузка графика...</div>
+      <div className="card p-5 lg:p-6 h-72 flex items-center justify-center">
+        <div className="flex items-center gap-2 text-txt-muted text-sm">
+          <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Загрузка графика...
+        </div>
       </div>
     );
   }
 
   if (!history || history.length < 2) {
     return (
-      <div className="glass rounded-2xl p-5 h-64 flex items-center justify-center">
-        <p className="text-muted text-sm">Недостаточно данных для графика</p>
+      <div className="card p-5 lg:p-6 h-72 flex items-center justify-center">
+        <div className="text-center">
+          <svg className="w-8 h-8 text-txt-muted mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+          </svg>
+          <p className="text-txt-muted text-sm">Недостаточно данных для графика</p>
+        </div>
       </div>
     );
   }
@@ -34,9 +45,21 @@ export default function PriceChart({ marketId }: { marketId: string }) {
   }));
 
   return (
-    <div className="glass rounded-2xl p-5">
-      <h3 className="font-semibold text-sm mb-4">История цены</h3>
-      <div className="h-56">
+    <div className="card p-5 lg:p-6">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="font-display font-semibold text-base">История цены</h3>
+        <div className="flex items-center gap-4 text-xs">
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-0.5 bg-yes rounded-full" />
+            <span className="text-txt-muted">Да</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-0.5 bg-no rounded-full opacity-60" />
+            <span className="text-txt-muted">Нет</span>
+          </span>
+        </div>
+      </div>
+      <div className="h-64 lg:h-72">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
             <defs>
@@ -51,25 +74,27 @@ export default function PriceChart({ marketId }: { marketId: string }) {
             </defs>
             <XAxis
               dataKey="time"
-              tick={{ fill: "#64748b", fontSize: 10 }}
+              tick={{ fill: "#64748b", fontSize: 10, fontFamily: "IBM Plex Mono" }}
               axisLine={false}
               tickLine={false}
               interval="preserveStartEnd"
             />
             <YAxis
               domain={[0, 100]}
-              tick={{ fill: "#64748b", fontSize: 10 }}
+              tick={{ fill: "#64748b", fontSize: 10, fontFamily: "IBM Plex Mono" }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v) => `${v}%`}
             />
             <Tooltip
               contentStyle={{
-                background: "#131829",
+                background: "#111827",
                 border: "1px solid #1e293b",
-                borderRadius: 12,
+                borderRadius: 10,
                 fontSize: 12,
-                color: "#fff",
+                fontFamily: "IBM Plex Mono",
+                color: "#e8eaed",
+                padding: "8px 12px",
               }}
               formatter={(value: number, name: string) => [
                 `${value}%`,

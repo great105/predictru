@@ -35,22 +35,22 @@ export default function TradePanel({ market }: { market: MarketDetail }) {
   const isLoading = buy.isPending || sell.isPending;
 
   return (
-    <div className="glass rounded-2xl p-5 space-y-4">
+    <div className="card p-5 lg:p-6 space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm">Торговля</h3>
-        <div className="flex bg-surface-3 rounded-lg p-0.5">
+        <h3 className="font-display font-semibold text-base">Торговля</h3>
+        <div className="flex bg-base-700 rounded-lg p-0.5 border border-line">
           <button
             onClick={() => setMode("buy")}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              mode === "buy" ? "bg-accent text-white shadow" : "text-muted hover:text-white"
+            className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              mode === "buy" ? "bg-brand text-base-950 shadow-sm" : "text-txt-muted hover:text-txt"
             }`}
           >
             Купить
           </button>
           <button
             onClick={() => setMode("sell")}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-              mode === "sell" ? "bg-no text-white shadow" : "text-muted hover:text-white"
+            className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all ${
+              mode === "sell" ? "bg-no text-white shadow-sm" : "text-txt-muted hover:text-txt"
             }`}
           >
             Продать
@@ -65,19 +65,12 @@ export default function TradePanel({ market }: { market: MarketDetail }) {
           className={`relative overflow-hidden rounded-xl p-4 text-center transition-all border ${
             outcome === "yes"
               ? "border-yes/50 bg-yes/10"
-              : "border-border bg-surface-2 hover:border-yes/30"
+              : "border-line bg-base-800 hover:border-yes/30"
           }`}
         >
-          {outcome === "yes" && (
-            <motion.div
-              layoutId="outcome-glow"
-              className="absolute inset-0 bg-glow-yes"
-              transition={{ duration: 0.3 }}
-            />
-          )}
           <div className="relative">
-            <p className="text-yes font-bold text-lg font-mono">{Math.round(market.price_yes * 100)}%</p>
-            <p className="text-xs text-muted mt-0.5">Да</p>
+            <p className="text-yes font-bold text-xl font-mono">{Math.round(market.price_yes * 100)}%</p>
+            <p className="text-xs text-txt-muted mt-1 font-medium">Да</p>
           </div>
         </button>
         <button
@@ -85,26 +78,19 @@ export default function TradePanel({ market }: { market: MarketDetail }) {
           className={`relative overflow-hidden rounded-xl p-4 text-center transition-all border ${
             outcome === "no"
               ? "border-no/50 bg-no/10"
-              : "border-border bg-surface-2 hover:border-no/30"
+              : "border-line bg-base-800 hover:border-no/30"
           }`}
         >
-          {outcome === "no" && (
-            <motion.div
-              layoutId="outcome-glow"
-              className="absolute inset-0 bg-glow-no"
-              transition={{ duration: 0.3 }}
-            />
-          )}
           <div className="relative">
-            <p className="text-no font-bold text-lg font-mono">{Math.round(market.price_no * 100)}%</p>
-            <p className="text-xs text-muted mt-0.5">Нет</p>
+            <p className="text-no font-bold text-xl font-mono">{Math.round(market.price_no * 100)}%</p>
+            <p className="text-xs text-txt-muted mt-1 font-medium">Нет</p>
           </div>
         </button>
       </div>
 
       {/* Amount input */}
       <div>
-        <label className="text-xs text-muted mb-1.5 block">
+        <label className="text-xs text-txt-muted font-medium mb-1.5 block">
           {mode === "buy" ? "Сумма (PRC)" : "Количество акций"}
         </label>
         <input
@@ -120,7 +106,7 @@ export default function TradePanel({ market }: { market: MarketDetail }) {
             <button
               key={p}
               onClick={() => setAmount(String(p))}
-              className="chip chip-inactive text-[10px] flex-1"
+              className="chip chip-inactive text-[10px] flex-1 py-1.5"
             >
               {p}
             </button>
@@ -133,23 +119,23 @@ export default function TradePanel({ market }: { market: MarketDetail }) {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="bg-surface-2 rounded-xl p-3 space-y-2 text-xs"
+          className="bg-base-800 rounded-xl p-4 space-y-2.5 text-xs border border-line"
         >
-          <div className="flex justify-between text-muted">
+          <div className="flex justify-between text-txt-muted">
             <span>Цена за акцию</span>
-            <span className="font-mono">{(price * 100).toFixed(1)}%</span>
+            <span className="font-mono text-txt-secondary">{(price * 100).toFixed(1)}%</span>
           </div>
           {mode === "buy" && (
-            <div className="flex justify-between text-muted">
+            <div className="flex justify-between text-txt-muted">
               <span>~Акций</span>
-              <span className="font-mono">{estimatedShares.toFixed(2)}</span>
+              <span className="font-mono text-txt-secondary">{estimatedShares.toFixed(2)}</span>
             </div>
           )}
-          <div className="flex justify-between text-muted">
+          <div className="flex justify-between text-txt-muted">
             <span>Комиссия (2%)</span>
-            <span className="font-mono">{(numAmount * 0.02).toFixed(2)} PRC</span>
+            <span className="font-mono text-txt-secondary">{(numAmount * 0.02).toFixed(2)} PRC</span>
           </div>
-          <div className="border-t border-border pt-2 flex justify-between font-medium">
+          <div className="border-t border-line pt-2.5 flex justify-between font-semibold text-txt">
             <span>Потенц. выигрыш</span>
             <span className={`font-mono ${outcome === "yes" ? "text-yes" : "text-no"}`}>
               +{(estimatedShares * (1 - price)).toFixed(2)} PRC
@@ -159,8 +145,8 @@ export default function TradePanel({ market }: { market: MarketDetail }) {
       )}
 
       {/* Balance & submit */}
-      <div className="flex items-center justify-between text-xs text-muted">
-        <span>Баланс: <span className="font-mono text-white">{Number(balance).toLocaleString("ru-RU")} PRC</span></span>
+      <div className="flex items-center justify-between text-xs text-txt-muted">
+        <span>Баланс: <span className="font-mono text-txt">{Number(balance).toLocaleString("ru-RU")} PRC</span></span>
       </div>
 
       <button
