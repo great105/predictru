@@ -220,60 +220,82 @@ class OrderBookService:
         seller = await self.db.get(User, sell_order.user_id, with_for_update=True)
 
         if settlement == SettlementType.TRANSFER:
-            # Determine share type from intents
-            # BUY_YES + SELL_YES → transfer YES shares
-            # SELL_NO + BUY_NO → transfer NO shares
             is_no_transfer = (
                 buy_intent == OrderIntent.SELL_NO and sell_intent == OrderIntent.BUY_NO
             )
-            share_type = "no" if is_no_transfer else "yes"
 
             if is_no_transfer:
-                # SELL_NO user (buy side on book) buys NO shares
-                # BUY_NO user (sell side on book) sells NO shares
-                # The "price" is book price (YES price), NO price = 1 - price
-                cost = (Decimal("1") - price) * qty
+                # NO share transfer: after swap, buy_order=SELL_NO (book BUY),
+                # sell_order=BUY_NO (book SELL). Economic roles are inverted:
+                # SELL_NO user (buyer var) is the economic seller of NO shares,
+                # BUY_NO user (seller var) is the economic buyer of NO shares.
+                cost = (Decimal("1") - price) * qty  # NO price
+
+                # BUY_NO user (seller var) pays PRC
+                # Release reservation based on order price, not fill price
+                no_buyer_reserve = (Decimal("1") - sell_order.price) * qty
+                seller.reserved_balance -= no_buyer_reserve
+                seller.balance -= cost
+                # SELL_NO user (buyer var) receives PRC minus fee
+                buyer.balance += cost - fee
+
+                # Move NO shares: SELL_NO (buy_order) → BUY_NO (sell_order)
+                from_pos = await self._get_or_create_position(
+                    buy_order.user_id, market.id, "no"
+                )
+                from_pos.reserved_shares -= qty
+                from_pos.shares -= qty
+
+                to_pos = await self._get_or_create_position(
+                    sell_order.user_id, market.id, "no"
+                )
+                to_pos.shares += qty
+                to_pos.total_cost += cost
+                if to_pos.shares > 0:
+                    to_pos.avg_price = to_pos.total_cost / to_pos.shares
             else:
+                # YES share transfer: BUY_YES (buy_order) buys, SELL_YES (sell_order) sells
                 cost = price * qty
 
-            buyer.reserved_balance -= cost
-            buyer.balance -= cost
-            seller_revenue = cost - fee
-            seller.balance += seller_revenue
+                # Release reservation based on order price (handles price improvement)
+                buyer_reserve = buy_order.price * qty
+                buyer.reserved_balance -= buyer_reserve
+                buyer.balance -= cost
+                seller.balance += cost - fee
 
-            # Move shares
-            seller_pos = await self._get_or_create_position(
-                sell_order.user_id, market.id, share_type
-            )
-            seller_pos.reserved_shares -= qty
-            seller_pos.shares -= qty
+                # Move YES shares from seller to buyer
+                seller_pos = await self._get_or_create_position(
+                    sell_order.user_id, market.id, "yes"
+                )
+                seller_pos.reserved_shares -= qty
+                seller_pos.shares -= qty
 
-            buyer_pos = await self._get_or_create_position(
-                buy_order.user_id, market.id, share_type
-            )
-            buyer_pos.shares += qty
-            buyer_pos.total_cost += cost
-            if buyer_pos.shares > 0:
-                buyer_pos.avg_price = buyer_pos.total_cost / buyer_pos.shares
+                buyer_pos = await self._get_or_create_position(
+                    buy_order.user_id, market.id, "yes"
+                )
+                buyer_pos.shares += qty
+                buyer_pos.total_cost += cost
+                if buyer_pos.shares > 0:
+                    buyer_pos.avg_price = buyer_pos.total_cost / buyer_pos.shares
 
         elif settlement == SettlementType.MINT:
-            # buy_yes + buy_no (= sell on book): mint YES+NO pair
-            # Buyer pays P (price), "seller" (buy_no) pays 1-P
-            # Both get their respective shares
+            # BUY_YES (buy_order) + BUY_NO (sell_order, book SELL): mint YES+NO pair
             buyer_cost = price * qty
             seller_cost = (Decimal("1") - price) * qty
 
-            # Fee from the total 1.0 * qty PRC being deposited
             total_deposited = buyer_cost + seller_cost  # = qty PRC
             fee = (total_deposited * self.fee_percent).quantize(Decimal("0.01"))
             half_fee = (fee / 2).quantize(Decimal("0.01"))
 
-            buyer.reserved_balance -= buyer_cost
+            # Release reservations based on order prices (handles price improvement)
+            buyer_reserve = buy_order.price * qty
+            seller_reserve = (Decimal("1") - sell_order.price) * qty
+            buyer.reserved_balance -= buyer_reserve
             buyer.balance -= buyer_cost + half_fee
-            seller.reserved_balance -= seller_cost
+            seller.reserved_balance -= seller_reserve
             seller.balance -= seller_cost + (fee - half_fee)
 
-            # Mint YES shares for buyer
+            # Mint YES shares for BUY_YES user
             buyer_pos = await self._get_or_create_position(
                 buy_order.user_id, market.id, "yes"
             )
@@ -282,7 +304,7 @@ class OrderBookService:
             if buyer_pos.shares > 0:
                 buyer_pos.avg_price = buyer_pos.total_cost / buyer_pos.shares
 
-            # Mint NO shares for seller (the buy_no user)
+            # Mint NO shares for BUY_NO user
             seller_pos = await self._get_or_create_position(
                 sell_order.user_id, market.id, "no"
             )
