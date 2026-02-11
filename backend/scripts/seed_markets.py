@@ -382,74 +382,85 @@ LMSR_MARKETS = [
 
 async def seed():
     async with async_session() as db:
-        # Check if markets already exist
-        result = await db.execute(select(Market).limit(1))
-        if result.scalar_one_or_none():
-            print("Markets already exist, skipping seed.")
-            return
+        added = 0
 
-        for m in MARKETS:
-            closes_str = m["closes_at"]
-            closes_at = datetime.strptime(closes_str, "%Y-%m-%d").replace(
-                hour=23, minute=59, second=59, tzinfo=timezone.utc
-            )
-
-            market = Market(
-                id=uuid.uuid4(),
-                title=m["title"],
-                description=m["description"],
-                category=m["category"],
-                closes_at=closes_at,
-                amm_type="clob",
-                is_featured=m.get("is_featured", False),
-                resolution_source=m.get("resolution_source", ""),
-                last_trade_price_yes=Decimal(str(m["initial_price"])),
-                liquidity_b=Decimal("100"),
-                min_bet=Decimal("1"),
-                max_bet=Decimal("10000"),
-            )
-            db.add(market)
-            print(
-                f"  + [CLOB] {m['title'][:55]}... ({m['category']}, {m['initial_price']})"
-            )
-
-        for m in LMSR_MARKETS:
-            closes_str = m["closes_at"]
-            closes_at = datetime.strptime(closes_str, "%Y-%m-%d").replace(
-                hour=23, minute=59, second=59, tzinfo=timezone.utc
-            )
-            init_p = float(m["initial_price"])
-            b = 100.0
-            # LMSR: price_yes = e^(q_yes/b) / (e^(q_yes/b) + e^(q_no/b))
-            # With q_no=0: q_yes = b * ln(p / (1-p))
-            q_yes = b * math.log(init_p / (1 - init_p))
-
-            market = Market(
-                id=uuid.uuid4(),
-                title=m["title"],
-                description=m["description"],
-                category=m["category"],
-                closes_at=closes_at,
-                amm_type="lmsr",
-                is_featured=m.get("is_featured", False),
-                resolution_source=m.get("resolution_source", ""),
-                last_trade_price_yes=Decimal(str(m["initial_price"])),
-                q_yes=Decimal(str(round(q_yes, 6))),
-                q_no=Decimal("0"),
-                liquidity_b=Decimal("100"),
-                min_bet=Decimal("1"),
-                max_bet=Decimal("10000"),
-            )
-            db.add(market)
-            print(
-                f"  + [LMSR] {m['title'][:55]}... ({m['category']}, {m['initial_price']})"
-            )
-
-        await db.commit()
-        total = len(MARKETS) + len(LMSR_MARKETS)
-        print(
-            f"\nSeeded {total} markets ({len(MARKETS)} CLOB + {len(LMSR_MARKETS)} LMSR)."
+        # ── CLOB markets ──
+        result = await db.execute(
+            select(Market).where(Market.amm_type == "clob").limit(1)
         )
+        if result.scalar_one_or_none():
+            print("CLOB markets already exist, skipping.")
+        else:
+            for m in MARKETS:
+                closes_at = datetime.strptime(m["closes_at"], "%Y-%m-%d").replace(
+                    hour=23, minute=59, second=59, tzinfo=timezone.utc
+                )
+                db.add(
+                    Market(
+                        id=uuid.uuid4(),
+                        title=m["title"],
+                        description=m["description"],
+                        category=m["category"],
+                        closes_at=closes_at,
+                        amm_type="clob",
+                        is_featured=m.get("is_featured", False),
+                        resolution_source=m.get("resolution_source", ""),
+                        last_trade_price_yes=Decimal(str(m["initial_price"])),
+                        liquidity_b=Decimal("100"),
+                        min_bet=Decimal("1"),
+                        max_bet=Decimal("10000"),
+                    )
+                )
+                print(
+                    f"  + [CLOB] {m['title'][:55]}... ({m['category']}, {m['initial_price']})"
+                )
+                added += len(MARKETS)
+
+        # ── LMSR markets ──
+        result = await db.execute(
+            select(Market).where(Market.amm_type == "lmsr").limit(1)
+        )
+        if result.scalar_one_or_none():
+            print("LMSR markets already exist, skipping.")
+        else:
+            for m in LMSR_MARKETS:
+                closes_at = datetime.strptime(m["closes_at"], "%Y-%m-%d").replace(
+                    hour=23, minute=59, second=59, tzinfo=timezone.utc
+                )
+                init_p = float(m["initial_price"])
+                b = 100.0
+                # LMSR: price_yes = e^(q_yes/b) / (e^(q_yes/b) + e^(q_no/b))
+                # With q_no=0: q_yes = b * ln(p / (1-p))
+                q_yes = b * math.log(init_p / (1 - init_p))
+
+                db.add(
+                    Market(
+                        id=uuid.uuid4(),
+                        title=m["title"],
+                        description=m["description"],
+                        category=m["category"],
+                        closes_at=closes_at,
+                        amm_type="lmsr",
+                        is_featured=m.get("is_featured", False),
+                        resolution_source=m.get("resolution_source", ""),
+                        last_trade_price_yes=Decimal(str(m["initial_price"])),
+                        q_yes=Decimal(str(round(q_yes, 6))),
+                        q_no=Decimal("0"),
+                        liquidity_b=Decimal("100"),
+                        min_bet=Decimal("1"),
+                        max_bet=Decimal("10000"),
+                    )
+                )
+                print(
+                    f"  + [LMSR] {m['title'][:55]}... ({m['category']}, {m['initial_price']})"
+                )
+                added += len(LMSR_MARKETS)
+
+        if added:
+            await db.commit()
+            print(f"\nSeeded {added} new markets.")
+        else:
+            print("\nAll markets already seeded.")
 
 
 if __name__ == "__main__":
