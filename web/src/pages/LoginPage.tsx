@@ -1,24 +1,109 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import TelegramLogin from "../components/TelegramLogin";
 import { useAuthStore } from "../store";
-import type { TelegramLoginData } from "../types";
-import { useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import api from "../api";
 
 export default function LoginPage() {
-  const { login, isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, restore } = useAuthStore();
   const navigate = useNavigate();
+
+  const [loginToken, setLoginToken] = useState<string | null>(null);
+  const [phase, setPhase] = useState<"idle" | "waiting" | "error">("idle");
+  const pollingRef = useRef<number | null>(null);
+  const tokenRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) navigate("/", { replace: true });
   }, [isAuthenticated, navigate]);
 
-  const handleAuth = async (user: TelegramLoginData) => {
+  // Generate login token on mount
+  useEffect(() => {
+    let cancelled = false;
+    const init = async () => {
+      try {
+        const { data } = await api.post("/auth/bot-login-init");
+        if (!cancelled) {
+          setLoginToken(data.token);
+          tokenRef.current = data.token;
+        }
+      } catch {
+        if (!cancelled) setPhase("error");
+      }
+    };
+    init();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
+
+  const startPolling = useCallback(() => {
+    if (pollingRef.current) return;
+    setPhase("waiting");
+
+    const poll = async () => {
+      const token = tokenRef.current;
+      if (!token) return;
+      try {
+        const { data } = await api.get(`/auth/bot-login-status/${token}`);
+        if (data.status === "confirmed") {
+          // Save auth data (same keys as store.login)
+          localStorage.setItem("token", data.access_token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          // Update Zustand state
+          useAuthStore.getState().restore();
+          if (pollingRef.current) {
+            clearInterval(pollingRef.current);
+            pollingRef.current = null;
+          }
+        }
+      } catch (err: unknown) {
+        const status = (err as { response?: { status?: number } })?.response?.status;
+        if (status === 404) {
+          // Token expired — stop polling
+          if (pollingRef.current) {
+            clearInterval(pollingRef.current);
+            pollingRef.current = null;
+          }
+          setPhase("error");
+        }
+      }
+    };
+
+    poll();
+    pollingRef.current = window.setInterval(poll, 2000);
+  }, []);
+
+  const handleOpenTelegram = () => {
+    if (!loginToken) return;
+    startPolling();
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const deepLink = `login_${loginToken}`;
+    if (isMobile) {
+      window.open(`https://t.me/predskazu_bot?start=${deepLink}`, "_blank");
+    } else {
+      // tg:// opens Telegram Desktop directly (no browser intermediary)
+      window.location.href = `tg://resolve?domain=predskazu_bot&start=${deepLink}`;
+    }
+  };
+
+  const handleRetry = async () => {
+    setPhase("idle");
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
     try {
-      await login(user);
-      navigate("/", { replace: true });
+      const { data } = await api.post("/auth/bot-login-init");
+      setLoginToken(data.token);
+      tokenRef.current = data.token;
     } catch {
-      alert("Ошибка авторизации. Попробуйте снова.");
+      setPhase("error");
     }
   };
 
@@ -80,29 +165,72 @@ export default function LoginPage() {
               Зарабатывайте на точных предсказаниях.
             </p>
 
-            {/* Telegram login */}
+            {/* Telegram bot login */}
             <div className="space-y-4">
-              {isLoading ? (
-                <div className="flex items-center gap-3 text-txt-secondary">
-                  <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  <span className="text-sm">Авторизация...</span>
+              {phase === "waiting" ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-txt-secondary">
+                    <svg className="animate-spin w-5 h-5 text-brand" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    <span className="text-sm font-medium">
+                      Ожидание подтверждения в Telegram...
+                    </span>
+                  </div>
+                  <p className="text-xs text-txt-muted">
+                    Нажмите <b>Start</b> (или <b>Запустить</b>) в боте, затем вернитесь сюда.
+                  </p>
+                  <button
+                    onClick={handleOpenTelegram}
+                    className="text-xs text-brand hover:underline"
+                  >
+                    Открыть Telegram ещё раз
+                  </button>
+                </div>
+              ) : phase === "error" ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-no">
+                    Токен истёк или произошла ошибка.
+                  </p>
+                  <button
+                    onClick={handleRetry}
+                    className="btn-primary"
+                  >
+                    Попробовать снова
+                  </button>
                 </div>
               ) : (
-                <TelegramLogin
-                  botName="predskazu_bot"
-                  onAuth={handleAuth}
-                  buttonSize="large"
-                  cornerRadius={8}
-                />
+                <>
+                  <button
+                    onClick={handleOpenTelegram}
+                    disabled={!loginToken}
+                    className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-[#2AABEE] hover:bg-[#229ED9] text-white font-semibold text-base transition-all shadow-lg shadow-[#2AABEE]/20 hover:shadow-[#2AABEE]/30 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                    </svg>
+                    Войти через Telegram
+                  </button>
+                  <p className="text-xs text-txt-muted max-w-sm">
+                    Откроется Telegram — нажмите <b>Start</b> в боте для подтверждения.
+                    <br />
+                    Никаких паролей, вход за 3 секунды.
+                  </p>
+                  {/* Fallback for users without tg:// protocol */}
+                  {loginToken && (
+                    <a
+                      href={`https://t.me/predskazu_bot?start=login_${loginToken}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => startPolling()}
+                      className="text-xs text-txt-muted hover:text-brand transition-colors inline-block"
+                    >
+                      Telegram не открылся? Нажмите здесь
+                    </a>
+                  )}
+                </>
               )}
-              <p className="text-xs text-txt-muted">
-                Нажмите кнопку выше — откроется окно Telegram для подтверждения.
-                <br />
-                Никаких паролей, вход за 2 секунды.
-              </p>
             </div>
           </motion.div>
 

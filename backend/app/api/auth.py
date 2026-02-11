@@ -1,10 +1,11 @@
+import json
 import uuid
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
 from app.core.config import settings
-from app.core.dependencies import DbSession
+from app.core.dependencies import DbSession, RedisConn
 from app.core.security import (
     create_access_token,
     validate_telegram_init_data,
@@ -72,6 +73,75 @@ async def authenticate_telegram(body: TelegramAuthRequest, db: DbSession):
         access_token=token,
         user=user_brief,
     )
+
+
+# ── Bot-based web login (deep link flow) ─────────────────────────
+
+
+@router.post("/bot-login-init")
+async def bot_login_init(redis: RedisConn):
+    """Generate a login token for bot-based web authentication."""
+    login_token = uuid.uuid4().hex
+    await redis.set(
+        f"web_login:{login_token}",
+        json.dumps({"status": "pending"}),
+        ex=300,
+    )
+    return {"token": login_token}
+
+
+@router.get("/bot-login-status/{login_token}")
+async def bot_login_status(login_token: str, redis: RedisConn, db: DbSession):
+    """Poll for bot-based login completion."""
+    raw = await redis.get(f"web_login:{login_token}")
+    if not raw:
+        raise HTTPException(status_code=404, detail="Token expired")
+
+    data = json.loads(raw)
+    if data["status"] == "pending":
+        return {"status": "pending"}
+
+    # Bot confirmed — create/update user and return JWT
+    tg_user = data["user"]
+    telegram_id = tg_user["id"]
+
+    result = await db.execute(select(User).where(User.telegram_id == telegram_id))
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        user = User(
+            id=uuid.uuid4(),
+            telegram_id=telegram_id,
+            username=tg_user.get("username"),
+            first_name=tg_user.get("first_name", ""),
+            last_name=tg_user.get("last_name"),
+            photo_url=None,
+            language_code="ru",
+            referral_code=uuid.uuid4().hex[:8],
+        )
+        db.add(user)
+    else:
+        user.username = tg_user.get("username", user.username)
+        user.first_name = tg_user.get("first_name", user.first_name)
+        user.last_name = tg_user.get("last_name", user.last_name)
+
+    await db.commit()
+    await db.refresh(user)
+
+    access_token = create_access_token({"sub": str(user.id), "tg": user.telegram_id})
+
+    user_brief = UserBrief.model_validate(user)
+    user_brief.is_admin = user.telegram_id in settings.admin_ids
+
+    # Delete token so it can't be reused
+    await redis.delete(f"web_login:{login_token}")
+
+    return {
+        "status": "confirmed",
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user_brief.model_dump(),
+    }
 
 
 @router.post("/telegram-login", response_model=AuthResponse)

@@ -1,3 +1,5 @@
+import json
+
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import (
@@ -6,6 +8,7 @@ from aiogram.types import (
     InlineKeyboardButton,
     WebAppInfo,
 )
+from redis.asyncio import Redis
 
 from config import settings
 
@@ -14,8 +17,51 @@ router = Router()
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
-    # Deep link referral
     args = message.text.split(maxsplit=1)
+
+    # ── Bot-based web login deep link ──
+    if len(args) > 1 and args[1].startswith("login_"):
+        login_token = args[1][6:]
+        redis = Redis.from_url(settings.REDIS_URL, decode_responses=True)
+        try:
+            key = f"web_login:{login_token}"
+            raw = await redis.get(key)
+            if raw:
+                data = json.loads(raw)
+                if data["status"] == "pending":
+                    user = message.from_user
+                    user_data = {
+                        "id": user.id,
+                        "first_name": user.first_name,
+                        "last_name": user.last_name,
+                        "username": user.username,
+                    }
+                    await redis.set(
+                        key,
+                        json.dumps({"status": "confirmed", "user": user_data}),
+                        ex=300,
+                    )
+                    await message.answer(
+                        "\u2705 <b>Авторизация прошла успешно!</b>\n\n"
+                        "Вернитесь на вкладку браузера \u2014 "
+                        "вход произойдёт автоматически.",
+                        parse_mode="HTML",
+                    )
+                else:
+                    await message.answer(
+                        "\u26a0\ufe0f Этот токен уже использован.",
+                        parse_mode="HTML",
+                    )
+            else:
+                await message.answer(
+                    "\u274c Токен истёк. Обновите страницу сайта и попробуйте снова.",
+                    parse_mode="HTML",
+                )
+        finally:
+            await redis.aclose()
+        return
+
+    # Deep link referral
     referral_param = ""
     if len(args) > 1 and args[1].startswith("ref_"):
         referral_code = args[1][4:]
