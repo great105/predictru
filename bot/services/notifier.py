@@ -15,37 +15,45 @@ async def send_resolution_notification(
     is_winner: bool,
     payout: float,
 ):
+    outcome_label = "ДА" if outcome.lower() == "yes" else "НЕТ"
+
     if is_winner:
         text = (
-            f"Your prediction was correct!\n\n"
-            f"Market: {market_title}\n"
-            f"Outcome: {outcome.upper()}\n"
-            f"Payout: +{payout:.2f} PRC"
+            f"\U0001f389 <b>Твой прогноз сбылся!</b>\n\n"
+            f"\U0001f4cc {market_title}\n"
+            f"\U0001f3af Исход: <b>{outcome_label}</b>\n"
+            f"\U0001f4b0 Выплата: <b>+{payout:.2f} PRC</b>\n\n"
+            f"\U0001f525 Так держать!"
         )
     else:
         text = (
-            f"Market resolved\n\n"
-            f"Market: {market_title}\n"
-            f"Outcome: {outcome.upper()}\n"
-            f"Better luck next time!"
+            f"\U0001f4e2 <b>Рынок закрыт</b>\n\n"
+            f"\U0001f4cc {market_title}\n"
+            f"\U0001f3af Исход: <b>{outcome_label}</b>\n\n"
+            f"\U0001f4aa В следующий раз повезёт!"
         )
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="View Market",
+                    text="\U0001f4c8 Посмотреть рынок",
                     callback_data=f"open_market:{market_id}",
                 )
             ],
             [
-                InlineKeyboardButton(text="Dismiss", callback_data="dismiss")
+                InlineKeyboardButton(
+                    text="\u274c Закрыть",
+                    callback_data="dismiss",
+                )
             ],
         ]
     )
 
     try:
-        await bot.send_message(telegram_id, text, reply_markup=keyboard)
+        await bot.send_message(
+            telegram_id, text, reply_markup=keyboard, parse_mode="HTML"
+        )
     except Exception as e:
         logger.error(f"Failed to send notification to {telegram_id}: {e}")
 
@@ -58,18 +66,27 @@ async def send_daily_digest(
     if not hot_markets:
         return
 
-    lines = ["Daily Digest - Hot Markets:\n"]
-    for m in hot_markets[:5]:
+    lines = [
+        "\U0001f31e <b>Доброе утро!</b>\n",
+        "\U0001f525 <b>Горячие рынки сегодня:</b>\n",
+    ]
+
+    for i, m in enumerate(hot_markets[:5], 1):
+        price_pct = m["price_yes"] * 100
+        volume = m.get("total_volume", 0)
         lines.append(
-            f"  {m['title']}\n"
-            f"  Yes: {m['price_yes'] * 100:.0f}% | Vol: {m['total_volume']:.0f} PRC\n"
+            f"  <b>{i}.</b> {m['title']}\n"
+            f"     \U0001f4ca Да: <b>{price_pct:.0f}%</b> \u2022 "
+            f"Объём: <b>{volume:,.0f} PRC</b>\n"
         )
+
+    lines.append("\n\U0001f447 Открой приложение и торгуй!")
 
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Open App",
+                    text="\U0001f680 Открыть приложение",
                     callback_data="open_market:home",
                 )
             ]
@@ -77,6 +94,11 @@ async def send_daily_digest(
     )
 
     try:
-        await bot.send_message(telegram_id, "\n".join(lines), reply_markup=keyboard)
+        await bot.send_message(
+            telegram_id,
+            "\n".join(lines),
+            reply_markup=keyboard,
+            parse_mode="HTML",
+        )
     except Exception as e:
         logger.error(f"Failed to send digest to {telegram_id}: {e}")
