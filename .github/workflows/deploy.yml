@@ -5,38 +5,40 @@ on:
     branches: [main]
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   deploy:
+    needs: ci
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Build and push Docker images
-        run: |
-          docker compose build api bot nginx
-
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
+          script_stop: true
+          command_timeout: 10m
           script: |
             cd /opt/predictru
-            git pull origin main
-            docker compose pull
-            docker compose up -d --build
-            sleep 10
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose build --parallel
+            docker compose up -d --remove-orphans
+            docker image prune -f
 
       - name: Health check
         run: |
-          for i in $(seq 1 10); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://${{ secrets.DEPLOY_HOST }}/health)
+          sleep 15
+          for i in $(seq 1 12); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.DEPLOY_HOST }}/health || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "Health check passed"
               exit 0
             fi
-            echo "Attempt $i: status $STATUS, retrying..."
-            sleep 5
+            echo "Attempt $i/12: status $STATUS, retrying..."
+            sleep 10
           done
-          echo "Health check failed"
+          echo "Health check failed after 2 minutes"
           exit 1

@@ -53,3 +53,7 @@ alembic/versions/__pycache__/
 # Monitoring data
 monitoring/grafana/data/
 monitoring/prometheus/data/
+
+# SSL certificates
+ssl/
+certbot/
