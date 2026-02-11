@@ -94,7 +94,7 @@ export default function LoginPage() {
             </div>
           ) : (
             <TelegramLogin
-              botName="predictru_bot"
+              botName="predskazu_bot"
               onAuth={handleAuth}
               buttonSize="large"
               cornerRadius={14}
