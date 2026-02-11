@@ -97,7 +97,7 @@ export function OpenOrders({ marketId }: OpenOrdersProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <h3 className="text-sm font-semibold mb-2">Ставки в ожидании</h3>
+        <h3 className="text-sm font-semibold mb-2">Open Orders</h3>
         <div className="text-center text-tg-hint text-sm py-4">Загрузка...</div>
       </div>
     );
@@ -110,7 +110,7 @@ export function OpenOrders({ marketId }: OpenOrdersProps) {
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
       <h3 className="text-sm font-semibold mb-2">
-        Ставки в ожидании ({orders.length})
+        Open Orders ({orders.length})
       </h3>
       <div>
         {orders.map((order) => (

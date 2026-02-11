@@ -46,7 +46,7 @@ export function HomePage() {
                 : "bg-tg-secondary text-tg-hint"
             }`}
           >
-            {t === "all" ? "Все" : t === "clob" ? "Биржа" : "Авто"}
+            {t === "all" ? "Все" : t === "clob" ? "Order Book" : "AMM"}
           </button>
         ))}
       </div>

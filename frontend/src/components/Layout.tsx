@@ -5,7 +5,6 @@ import { useAuthStore } from "@/stores/authStore";
 const baseTabs = [
   { to: "/", label: "Рынки", icon: "🏠" },
   { to: "/portfolio", label: "Портфель", icon: "💼" },
-  { to: "/leaderboard", label: "Топ", icon: "🏆" },
   { to: "/profile", label: "Профиль", icon: "👤" },
 ];
 

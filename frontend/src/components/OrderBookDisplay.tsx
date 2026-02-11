@@ -15,7 +15,7 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
   if (isLoading || !book) {
     return (
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <h3 className="text-sm font-semibold mb-3">Текущие заявки</h3>
+        <h3 className="text-sm font-semibold mb-3">Order Book</h3>
         <div className="text-center text-tg-hint text-sm py-8">Загрузка...</div>
       </div>
     );
@@ -37,7 +37,7 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <h3 className="text-sm font-semibold mb-3">Текущие заявки</h3>
+      <h3 className="text-sm font-semibold mb-3">Order Book</h3>
 
       {/* Header */}
       <div className="flex justify-between text-xs text-tg-hint mb-1 px-1">
