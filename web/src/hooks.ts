@@ -9,7 +9,6 @@ export function useMarkets(category?: string) {
     queryFn: ({ pageParam }) =>
       marketsApi.list({
         category: category === "all" ? undefined : category,
-        status: "open",
         cursor: pageParam as string | undefined,
         limit: 20,
       }),
