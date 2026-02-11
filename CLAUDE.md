@@ -8,6 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Domain**: предскажи.рф (punycode: `xn--80ahcgkj6ail.xn--p1ai`)
 **Bot**: @predskazu_bot
+**Admin Telegram ID**: 5722788755
 
 ## Build & Run Commands
 
@@ -87,7 +88,18 @@ taskiq scheduler app.tasks.scheduler:scheduler --fs-discover # Scheduler
 - **bot** (8081) - aiogram 3 via aiohttp webhook server
 - **taskiq-worker** - Async task consumer
 - **taskiq-scheduler** - Cron-scheduled tasks (leaderboard refresh, market auto-close, daily digests)
-- **nginx** (80/443) - Reverse proxy, rate limiting (30r/s API, 5r/s auth), serves both frontends + SSL via Let's Encrypt
+- **nginx** (80/443) - Reverse proxy, rate limiting (30r/s API, 5r/s auth), builds & serves both frontends + SSL via Let's Encrypt
+
+### Nginx & Frontend Build Pipeline
+
+The nginx Dockerfile (`nginx/Dockerfile`) has a **multi-stage build** that compiles both frontends:
+1. **Stage `miniapp-build`**: Builds `frontend/` (Mini App) → `dist/`
+2. **Stage `web-build`**: Builds `web/` (Desktop site) → `dist/`
+3. **Stage nginx**: Copies Mini App to `/usr/share/nginx/html/` (served at `/`), Web to `/usr/share/nginx/web/` (served at `/web`)
+
+To rebuild frontends: `docker compose build --no-cache nginx && docker compose up -d --force-recreate nginx`
+
+**Important**: `nginx/html/` directory in git contains a legacy pre-built Mini App. It is NOT used in production — the Docker build compiles from `frontend/` source. Do not rely on `nginx/html/` for deployments.
 
 ### Backend (`backend/`)
 
@@ -127,9 +139,19 @@ React 18 + Vite + TypeScript + TailwindCSS. Path alias: `@/` → `src/`. Designe
 
 **State management**: Zustand stores (`stores/`) for auth, trade, orderbook. React Query (`@tanstack/react-query`) for server state with 30s staleTime.
 
+**Key stores**:
+- `authStore` — user, JWT token
+- `orderbookStore` — orderType (buy/sell), selectedOutcome (yes/no), price, quantity — shared between `LimitOrderForm` and `OrderBookDisplay` (tap-to-fill)
+
+**CLOB trading form** (`LimitOrderForm.tsx`): Exchange-style UI with BUY/SELL toggle, YES/NO toggle, price stepper (0.01–0.99), quantity presets (5/10/25/50), order summary. Uses `orderbookStore` for state. Intent = `${orderType}_${selectedOutcome}`.
+
+**Navigation**: 3 tabs — Рынки, Портфель, Профиль (+ Админ for admin users). No Leaderboard tab.
+
 **API client** (`api/client.ts`): Axios instance with base URL `/v1`, auto-injects Bearer token from localStorage, auto-clears on 401.
 
 **Telegram Mini App integration**: `main.tsx` calls `WebApp.ready()`, `.expand()`, `.disableVerticalSwipes()` before React renders. Auth gate in `App.tsx` blocks rendering until JWT obtained.
+
+**Horizontal scroll prevention**: `overflow-x: hidden` on html/body in `index.css`, `flex-wrap` on all chip/tag rows, `overflow-x-hidden` on Layout root div.
 
 ### Frontend — Web (`web/`)
 
@@ -140,12 +162,18 @@ React 18 + Vite + TypeScript + TailwindCSS + Framer Motion + Recharts + Zustand 
 **Key files**:
 - `tailwind.config.ts` — Color system (base-950..300, brand, amber, yes/no, txt hierarchy, line), fonts, max-w-site
 - `src/index.css` — Component classes (card, btn-primary/secondary/ghost, chip, badge, input-field, text-gradient, shimmer)
-- `src/components/Layout.tsx` — Horizontal top navbar, footer, mobile hamburger
+- `src/components/Layout.tsx` — Horizontal top navbar (with conditional admin link), footer, mobile hamburger
 - `src/pages/LoginPage.tsx` — Landing page with bot-based Telegram auth
+- `src/pages/AdminPage.tsx` — Admin panel (market management, create form, FAQ guide)
+- `src/adminApi.ts` — Admin API endpoints (separate from api.ts to avoid modifying shared files)
+
+**Admin page** (`/admin`): Visible only to `is_admin` users. Three tabs: Рынки (list + resolve/cancel), Создать (market creation form), Справка (comprehensive FAQ with collapsible sections).
+
+**Market detail page**: Shows resolution rules (`resolution_source`) in a dedicated card section.
 
 **Auth**: Bot-based deep link auth (one-click, opens Telegram app). Flow: init token → open `t.me/predskazu_bot?start=login_TOKEN` → bot confirms via Redis → web polls for JWT.
 
-**DO NOT modify**: `api.ts`, `hooks.ts`, `store.ts`, `types.ts`, `App.tsx`, `main.tsx` — shared logic that works for both auth flows.
+**DO NOT modify** (shared auth/data logic): `api.ts`, `hooks.ts`, `store.ts`, `types.ts`, `main.tsx`. For admin API, use separate `adminApi.ts`. For new routes, `App.tsx` can be extended minimally.
 
 ### Bot (`bot/`)
 
@@ -196,6 +224,11 @@ Auto-deploys on push to `main` branch:
 5. `seed_markets.py` — idempotent seed of prediction markets (skips existing)
 6. Health check on `https://localhost/health` (12 attempts, 10s apart)
 
+### Manual Deploy
+```bash
+ssh root@195.26.225.39 "cd /opt/predictru && git fetch origin main && git reset --hard origin/main && docker compose build --no-cache nginx && docker compose up -d --force-recreate && docker compose restart nginx"
+```
+
 **Required GitHub Secrets**:
 - `DEPLOY_HOST` - Server IP/domain
 - `DEPLOY_USER` - SSH username
@@ -221,12 +254,15 @@ Production server accessible via SSH: `ssh root@195.26.225.39`. Project at `/opt
 - **Test Redis**: Override dependency to create fresh connections per request (pool connections go stale across event loops)
 - **SQLAlchemy relationships**: Always include `ForeignKey("table.col")` in `mapped_column` when adding `relationship()` - SA can't infer joins without it
 - **Dockerfile**: `ENV PYTHONPATH=/app` is required so Alembic can import app modules
-- **Telegram Desktop**: No horizontal scroll via mouse wheel. Use `flex-wrap` for horizontal items, not `overflow-x-auto`
+- **Telegram Desktop horizontal scroll**: Use `flex-wrap` for horizontal items, not `overflow-x-auto`. Global `overflow-x: hidden` on html/body in `index.css`. Add `min-w-0` on flex children that contain text
 - **`@telegram-apps/sdk-react`**: Use v2.0.25 (v2.1.0 doesn't exist)
 - **Bash + SQL**: Dollar amounts like `$10K` get interpreted as shell variables - use single quotes
 - **Docker .env reload**: `docker compose restart` does NOT re-read .env. Use `docker compose up -d --force-recreate` instead
 - **Alembic enums**: Don't manually `CREATE TYPE` + `create_type=False` — let `sa.Enum()` handle creation. `ALTER TYPE ADD VALUE` can't run inside transactions (wrap with `COMMIT`/`BEGIN`)
 - **Domain punycode**: предскажи.рф = `xn--80ahcgkj6ail.xn--p1ai` (NOT `xn--e1afkbacb0ada8j`)
 - **Nginx upstream DNS caching**: Nginx resolves upstream hostnames at startup and caches IPs. After `docker compose up -d` recreates API container (new IP), must `docker compose restart nginx` or health checks get 502
+- **Nginx ghost containers**: If `docker compose up -d --force-recreate nginx` fails with "container is running", run `docker compose stop nginx` first, then `docker compose up -d nginx`
 - **FastAPI router prefix**: Routers with `prefix="/auth"` — route decorators must NOT include `/auth` again (e.g., use `@router.post("/bot-login-init")` not `@router.post("/auth/bot-login-init")`)
 - **Telegram Login Widget**: Asks users for phone number — not suitable for one-click login. Use bot-based deep link auth instead (`https://t.me/bot?start=login_TOKEN`)
+- **nginx/html/ is stale**: The `nginx/html/` directory contains a legacy pre-built Mini App. Production builds from `frontend/` source via Docker multi-stage build. Don't update `nginx/html/` manually
+- **Web admin API**: Use separate `web/src/adminApi.ts` for admin endpoints instead of modifying `api.ts`
