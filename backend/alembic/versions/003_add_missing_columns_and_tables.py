@@ -59,23 +59,13 @@ def upgrade() -> None:
         ["id"],
     )
 
-    # Extend transactiontype enum with new values
-    op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'fee'")
-    op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'deposit'")
-    op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'withdraw'")
-    op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'order_fill'")
-    op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'order_cancel'")
-
     # --- Orders table ---
-    # Create enums
-    op.execute(
-        "CREATE TYPE orderside AS ENUM ('buy', 'sell')"
+    orderside = sa.Enum("buy", "sell", name="orderside")
+    orderstatus = sa.Enum(
+        "open", "partially_filled", "filled", "cancelled", name="orderstatus"
     )
-    op.execute(
-        "CREATE TYPE orderstatus AS ENUM ('open', 'partially_filled', 'filled', 'cancelled')"
-    )
-    op.execute(
-        "CREATE TYPE orderintent AS ENUM ('buy_yes', 'buy_no', 'sell_yes', 'sell_no')"
+    orderintent = sa.Enum(
+        "buy_yes", "buy_no", "sell_yes", "sell_no", name="orderintent"
     )
 
     op.create_table(
@@ -90,38 +80,12 @@ def upgrade() -> None:
             sa.ForeignKey("markets.id"),
             nullable=False,
         ),
-        sa.Column(
-            "side",
-            sa.Enum("buy", "sell", name="orderside", create_type=False),
-            nullable=False,
-        ),
+        sa.Column("side", orderside, nullable=False),
         sa.Column("price", sa.Numeric(5, 2), nullable=False),
         sa.Column("quantity", sa.Numeric(16, 6), nullable=False),
         sa.Column("filled_quantity", sa.Numeric(16, 6), server_default="0"),
-        sa.Column(
-            "status",
-            sa.Enum(
-                "open",
-                "partially_filled",
-                "filled",
-                "cancelled",
-                name="orderstatus",
-                create_type=False,
-            ),
-            server_default="open",
-        ),
-        sa.Column(
-            "original_intent",
-            sa.Enum(
-                "buy_yes",
-                "buy_no",
-                "sell_yes",
-                "sell_no",
-                name="orderintent",
-                create_type=False,
-            ),
-            nullable=False,
-        ),
+        sa.Column("status", orderstatus, server_default="open"),
+        sa.Column("original_intent", orderintent, nullable=False),
         sa.Column(
             "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
         ),
@@ -138,9 +102,7 @@ def upgrade() -> None:
     op.create_index("ix_orders_market_status", "orders", ["market_id", "status"])
 
     # --- TradeFills table ---
-    op.execute(
-        "CREATE TYPE settlementtype AS ENUM ('transfer', 'mint', 'burn')"
-    )
+    settlementtype = sa.Enum("transfer", "mint", "burn", name="settlementtype")
 
     op.create_table(
         "trade_fills",
@@ -178,11 +140,7 @@ def upgrade() -> None:
         sa.Column("price", sa.Numeric(5, 2), nullable=False),
         sa.Column("quantity", sa.Numeric(16, 6), nullable=False),
         sa.Column("fee", sa.Numeric(12, 2), server_default="0"),
-        sa.Column(
-            "settlement_type",
-            sa.Enum("transfer", "mint", "burn", name="settlementtype", create_type=False),
-            nullable=False,
-        ),
+        sa.Column("settlement_type", settlementtype, nullable=False),
         sa.Column(
             "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
         ),
@@ -193,6 +151,17 @@ def upgrade() -> None:
     op.create_index(
         "ix_trade_fills_market", "trade_fills", ["market_id", "created_at"]
     )
+
+    # Extend transactiontype enum with new values
+    # NOTE: ALTER TYPE ADD VALUE cannot run inside a transaction
+    # so we commit first and then run them outside the transaction
+    op.execute("COMMIT")
+    op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'fee'")
+    op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'deposit'")
+    op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'withdraw'")
+    op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'order_fill'")
+    op.execute("ALTER TYPE transactiontype ADD VALUE IF NOT EXISTS 'order_cancel'")
+    op.execute("BEGIN")
 
 
 def downgrade() -> None:
