@@ -133,12 +133,29 @@ Uses Taskiq with Redis broker. Cron-scheduled via `LabelScheduleSource`:
 
 Copy `.env.example` to `.env`. Key variables: `TELEGRAM_BOT_TOKEN`, `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`, `ADMIN_TELEGRAM_IDS` (comma-separated). `APP_ENV=test` switches Taskiq to in-memory broker.
 
-## CI (GitHub Actions)
+## Repository
 
+**GitHub**: https://github.com/great105/predictru
+
+## CI/CD (GitHub Actions)
+
+### CI (`ci.yml`)
 - `backend-lint` - ruff check + format
 - `backend-test` - pytest against real Postgres/Redis services
 - `frontend-lint` - eslint
 - `frontend-test` - vitest
+
+### Deploy (`deploy.yml`)
+Auto-deploys on push to `main` branch:
+1. Builds Docker images (api, bot, nginx)
+2. SSH into production server
+3. `git pull` + `docker compose up -d --build`
+4. Health check on `/health` endpoint
+
+**Required GitHub Secrets**:
+- `DEPLOY_HOST` - Server IP/domain
+- `DEPLOY_USER` - SSH username
+- `DEPLOY_KEY` - Private SSH key
 
 ## Known Pitfalls
 
