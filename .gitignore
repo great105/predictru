@@ -27,6 +27,10 @@ yarn-error.log*
 # Build
 frontend/dist/
 frontend/build/
+web/dist/
+
+# Playwright MCP
+.playwright-mcp/
 
 # Docker
 *.log

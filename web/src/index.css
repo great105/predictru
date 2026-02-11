@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #1e293b transparent;
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 3px;
+  }
+
+  body {
+    background: #06080f;
+    min-height: 100vh;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@layer components {
+  .glass {
+    background: linear-gradient(135deg, rgba(19, 24, 41, 0.8), rgba(12, 16, 32, 0.6));
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(30, 41, 59, 0.5);
+  }
+
+  .glass-hover:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.08);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 rounded-xl font-semibold text-sm
+      bg-gradient-to-r from-accent to-blue-600
+      hover:from-accent-light hover:to-blue-500
+      transition-all duration-200 shadow-lg shadow-accent/20
+      active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 rounded-lg text-sm font-medium
+      text-muted hover:text-white hover:bg-surface-3
+      transition-all duration-200;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl bg-surface-2 border border-border
+      text-white placeholder-muted
+      focus:border-accent/50 focus:ring-1 focus:ring-accent/20
+      outline-none transition-all duration-200;
+  }
+
+  .stat-card {
+    @apply glass rounded-2xl p-5;
+  }
+
+  .chip {
+    @apply px-3 py-1.5 rounded-full text-xs font-medium
+      transition-all duration-200 cursor-pointer select-none;
+  }
+
+  .chip-active {
+    @apply bg-accent/20 text-accent border border-accent/30;
+  }
+
+  .chip-inactive {
+    @apply bg-surface-3 text-muted border border-transparent hover:text-white;
+  }
+}
+
+@layer utilities {
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
+}

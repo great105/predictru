@@ -1,0 +1,41 @@
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuthStore } from "./store";
+import { useEffect } from "react";
+import Layout from "./components/Layout";
+import LoginPage from "./pages/LoginPage";
+import HomePage from "./pages/HomePage";
+import MarketPage from "./pages/MarketPage";
+import PortfolioPage from "./pages/PortfolioPage";
+import ProfilePage from "./pages/ProfilePage";
+import LeaderboardPage from "./pages/LeaderboardPage";
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+export default function App() {
+  const restore = useAuthStore((s) => s.restore);
+  useEffect(() => { restore(); }, [restore]);
+
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<HomePage />} />
+        <Route path="market/:id" element={<MarketPage />} />
+        <Route path="portfolio" element={<PortfolioPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="leaderboard" element={<LeaderboardPage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}

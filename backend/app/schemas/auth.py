@@ -8,6 +8,17 @@ class TelegramAuthRequest(BaseModel):
     init_data: str
 
 
+class TelegramLoginRequest(BaseModel):
+    """Data from Telegram Login Widget."""
+    id: int
+    first_name: str
+    last_name: str | None = None
+    username: str | None = None
+    photo_url: str | None = None
+    auth_date: int
+    hash: str
+
+
 class UserBrief(BaseModel):
     id: UUID
     telegram_id: int
