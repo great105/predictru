@@ -315,11 +315,218 @@ function CreateForm({ onSuccess }: { onSuccess: () => void }) {
   );
 }
 
+function FaqSection({ title, children }: { title: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="card overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-base-700/50 transition-colors"
+      >
+        <span className="text-sm font-semibold text-txt">{title}</span>
+        <svg
+          className={`w-4 h-4 text-txt-muted shrink-0 transition-transform ${open ? "rotate-180" : ""}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
+      {open && (
+        <div className="px-5 pb-5 text-sm text-txt-secondary space-y-3 leading-relaxed border-t border-line pt-4">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GuidePage() {
+  return (
+    <div className="space-y-3">
+      <FaqSection title="Что такое рынок предсказаний?">
+        <p>
+          Рынок предсказаний — площадка, где пользователи делают ставки на исход реальных событий.
+          Каждый рынок — это вопрос с ответом <strong className="text-txt">ДА</strong> или <strong className="text-txt">НЕТ</strong>.
+        </p>
+        <p>
+          Пример: «Биткоин достигнет $100K до 1 июля?»
+        </p>
+        <p>
+          Пользователи покупают акции <strong className="text-yes">YES</strong> (если верят, что да) или <strong className="text-no">NO</strong> (если нет).
+          Цена акции — от 0.01 до 0.99 PRC, отражает вероятность события.
+        </p>
+        <p>
+          Когда рынок резолвится, победившие акции стоят <strong className="text-txt">1 PRC</strong>, проигравшие — <strong className="text-txt">0 PRC</strong>.
+        </p>
+      </FaqSection>
+
+      <FaqSection title="Как торговать?">
+        <p className="font-semibold text-txt">Для пользователя всё просто:</p>
+        <ol className="list-decimal pl-5 space-y-1.5">
+          <li>Открой рынок, который тебе интересен</li>
+          <li>Выбери <strong className="text-yes">BUY</strong> (купить) или <strong className="text-no">SELL</strong> (продать)</li>
+          <li>Выбери <strong className="text-yes">YES</strong> или <strong className="text-no">NO</strong></li>
+          <li>Укажи цену (0.01–0.99) — это твоя оценка вероятности</li>
+          <li>Укажи количество акций</li>
+          <li>Нажми кнопку — ордер уходит в книгу ордеров</li>
+        </ol>
+        <p>
+          Если есть встречный ордер по твоей цене — сделка происходит мгновенно.
+          Если нет — ордер ждёт в книге, пока кто-то не предложит встречную цену.
+        </p>
+      </FaqSection>
+
+      <FaqSection title="CLOB — Книга ордеров (рекомендуется)">
+        <p>
+          <strong className="text-txt">CLOB</strong> (Central Limit Order Book) — книга ордеров, как на настоящей бирже.
+          Это основной режим для новых рынков.
+        </p>
+        <p className="font-semibold text-txt">Как работает:</p>
+        <ul className="list-disc pl-5 space-y-1">
+          <li>Пользователь выставляет ордер: «Куплю YES по 0.60, 10 штук»</li>
+          <li>Если есть встречный ордер — сделка происходит автоматически</li>
+          <li>Если нет — ордер стоит в книге и ждёт</li>
+          <li>Одна книга на рынок (только YES сторона)</li>
+        </ul>
+        <p className="font-semibold text-txt mt-2">Три типа сделок:</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="bg-base-700 rounded-lg p-3 border border-line">
+            <p className="font-semibold text-brand text-xs mb-1">Transfer</p>
+            <p className="text-xs">Акции переходят от продавца к покупателю</p>
+          </div>
+          <div className="bg-base-700 rounded-lg p-3 border border-line">
+            <p className="font-semibold text-yes text-xs mb-1">Mint</p>
+            <p className="text-xs">Создаётся пара YES+NO (BUY YES встречает BUY NO)</p>
+          </div>
+          <div className="bg-base-700 rounded-lg p-3 border border-line">
+            <p className="font-semibold text-no text-xs mb-1">Burn</p>
+            <p className="text-xs">Пара уничтожается, PRC возвращается (SELL YES + SELL NO)</p>
+          </div>
+        </div>
+        <div className="bg-base-700 rounded-lg p-3 border border-line text-xs space-y-1 mt-1">
+          <p className="font-semibold text-txt">Пример:</p>
+          <p>Алиса: «Куплю YES по 0.65» (платит 6.50 PRC за 10 акций)</p>
+          <p>Боб: «Куплю NO по 0.35» = «Продам YES по 0.65»</p>
+          <p>Сделка Mint: 10 YES (Алисе) + 10 NO (Бобу)</p>
+          <p>Алиса заплатила 6.50, Боб 3.50, всего 10.00 = 10 пар</p>
+        </div>
+      </FaqSection>
+
+      <FaqSection title="LMSR — Автоматический маркетмейкер">
+        <p>
+          <strong className="text-txt">LMSR</strong> (Logarithmic Market Scoring Rule) — автоматический маркетмейкер.
+          Цены вычисляются по формуле, всегда есть ликвидность.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="bg-yes/5 rounded-lg p-3 border border-yes/10">
+            <p className="font-semibold text-yes text-xs mb-1">Плюсы</p>
+            <p className="text-xs">Всегда есть цена. Можно торговать сразу. Простой для пользователей.</p>
+          </div>
+          <div className="bg-no/5 rounded-lg p-3 border border-no/10">
+            <p className="font-semibold text-no text-xs mb-1">Минусы</p>
+            <p className="text-xs">Проскальзывание цены. Нет лимитных ордеров. Менее точная цена.</p>
+          </div>
+        </div>
+        <p>
+          Покупка акций сдвигает цену вверх, продажа — вниз. Параметр <strong className="text-txt">b</strong> (liquidity) определяет стабильность цены.
+        </p>
+      </FaqSection>
+
+      <FaqSection title="Жизненный цикл рынка">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <span className="badge badge-open text-[10px] shrink-0">open</span>
+            <span>Рынок создан, торги идут</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber/10 text-amber border border-amber/20 shrink-0">trading_closed</span>
+            <span>Торги закрыты (по дате), ждёт резолюции админа</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="badge badge-resolved text-[10px] shrink-0">resolved</span>
+            <span>Админ выбрал исход (YES / NO), выплаты прошли</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-no/10 text-no border border-no/20 shrink-0">cancelled</span>
+            <span>Рынок отменён, все деньги возвращены</span>
+          </div>
+        </div>
+      </FaqSection>
+
+      <FaqSection title="Резолюция и отмена рынка">
+        <p className="font-semibold text-txt">Резолюция (YES / NO):</p>
+        <ul className="list-disc pl-5 space-y-1">
+          <li>Админ нажимает YES или NO в списке рынков</li>
+          <li>Все открытые ордера автоматически отменяются</li>
+          <li>Владельцы победивших акций получают по <strong className="text-txt">1 PRC</strong> за акцию</li>
+          <li>Проигравшие акции обнуляются</li>
+        </ul>
+        <p className="font-semibold text-txt mt-2">Отмена рынка:</p>
+        <ul className="list-disc pl-5 space-y-1">
+          <li>Все ордера отменяются</li>
+          <li>Все акции (YES и NO) обнуляются</li>
+          <li>Каждому пользователю возвращается потраченная сумма</li>
+        </ul>
+      </FaqSection>
+
+      <FaqSection title="PRC, комиссии и бонусы">
+        <ul className="list-disc pl-5 space-y-1">
+          <li><strong className="text-txt">PRC</strong> — внутренняя валюта платформы (виртуальная)</li>
+          <li>Бонус при регистрации: <strong className="text-brand">1,000 PRC</strong></li>
+          <li>Ежедневный бонус: <strong className="text-brand">50 PRC</strong></li>
+          <li>Комиссия на сделки: <strong className="text-txt">2%</strong></li>
+          <li>Пополнение — бесплатное (виртуальная валюта)</li>
+        </ul>
+      </FaqSection>
+
+      <FaqSection title="Советы по созданию рынков">
+        <ul className="list-disc pl-5 space-y-1.5">
+          <li>Вопрос должен быть <strong className="text-txt">однозначным</strong> — чётко ясно, когда YES, когда NO</li>
+          <li>Обязательно указывай <strong className="text-txt">дату и источник</strong> для резолюции</li>
+          <li>Дата закрытия — когда торги прекращаются (до наступления события)</li>
+          <li>Для популярных рынков ставь <strong className="text-brand">Featured</strong></li>
+          <li>Используй <strong className="text-txt">CLOB</strong> — он точнее и дешевле для платформы</li>
+          <li>LMSR подходит только для рынков с гарантированной ликвидностью</li>
+        </ul>
+      </FaqSection>
+
+      <FaqSection title="Технический стек">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="bg-base-700 rounded-lg p-3 border border-line">
+            <p className="font-semibold text-brand text-xs mb-1">Backend</p>
+            <p className="text-xs">FastAPI + SQLAlchemy 2.0 + PostgreSQL + Redis + Taskiq</p>
+          </div>
+          <div className="bg-base-700 rounded-lg p-3 border border-line">
+            <p className="font-semibold text-brand text-xs mb-1">Frontend</p>
+            <p className="text-xs">React 18 + TypeScript + Vite + TailwindCSS + Zustand + React Query</p>
+          </div>
+          <div className="bg-base-700 rounded-lg p-3 border border-line">
+            <p className="font-semibold text-brand text-xs mb-1">Бот</p>
+            <p className="text-xs">aiogram 3 + aiohttp webhook</p>
+          </div>
+          <div className="bg-base-700 rounded-lg p-3 border border-line">
+            <p className="font-semibold text-brand text-xs mb-1">Инфраструктура</p>
+            <p className="text-xs">Docker Compose + Nginx + Let's Encrypt + GitHub Actions CI/CD</p>
+          </div>
+        </div>
+        <p className="mt-2">
+          Два фронтенда: <strong className="text-txt">Mini App</strong> (Telegram, мобильный) + <strong className="text-txt">Web</strong> (десктоп, предскажи.рф).
+          Оба используют один API <code className="text-brand text-xs">/v1/</code>.
+        </p>
+        <p>
+          Два режима торгов: <strong className="text-txt">CLOB</strong> (ордер-бук, рекомендуется) и <strong className="text-txt">LMSR</strong> (AMM, legacy).
+          Авторизация: Mini App через initData HMAC-SHA256, Web через Telegram-бота (deep link).
+        </p>
+      </FaqSection>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<"markets" | "create">("markets");
+  const [tab, setTab] = useState<"markets" | "create" | "guide">("markets");
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-markets"],
@@ -383,6 +590,16 @@ export default function AdminPage() {
           >
             + Создать
           </button>
+          <button
+            onClick={() => setTab("guide")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              tab === "guide"
+                ? "bg-brand/10 text-brand"
+                : "text-txt-secondary hover:text-txt hover:bg-base-700"
+            }`}
+          >
+            Справка
+          </button>
         </div>
       </div>
 
@@ -422,6 +639,8 @@ export default function AdminPage() {
           }}
         />
       )}
+
+      {tab === "guide" && <GuidePage />}
     </div>
   );
 }
