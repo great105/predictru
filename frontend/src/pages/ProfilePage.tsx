@@ -121,7 +121,7 @@ export function ProfilePage() {
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
         <h3 className="text-sm font-semibold mb-2">Реферальный код</h3>
         <div className="flex items-center gap-2">
-          <code className="flex-1 bg-tg-secondary rounded px-3 py-2 text-sm font-mono">
+          <code className="flex-1 min-w-0 truncate bg-tg-secondary rounded px-3 py-2 text-sm font-mono">
             {user.referral_code}
           </code>
           <button

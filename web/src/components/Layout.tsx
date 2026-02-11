@@ -3,12 +3,14 @@ import { useAuthStore } from "../store";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 
-const NAV_ITEMS = [
+const NAV_ITEMS: { to: string; label: string; end?: boolean }[] = [
   { to: "/", label: "Рынки", end: true },
   { to: "/portfolio", label: "Портфель" },
   { to: "/leaderboard", label: "Рейтинг" },
   { to: "/profile", label: "Профиль" },
 ];
+
+const ADMIN_ITEM = { to: "/admin", label: "Админ" };
 
 export default function Layout() {
   const { user, logout } = useAuthStore();
@@ -51,6 +53,20 @@ export default function Layout() {
                   {item.label}
                 </NavLink>
               ))}
+              {user?.is_admin && (
+                <NavLink
+                  to={ADMIN_ITEM.to}
+                  className={({ isActive }) =>
+                    `px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive
+                        ? "text-brand bg-brand/10"
+                        : "text-txt-secondary hover:text-txt hover:bg-base-700"
+                    }`
+                  }
+                >
+                  {ADMIN_ITEM.label}
+                </NavLink>
+              )}
             </nav>
 
             {/* Right section: balance + user */}
@@ -119,6 +135,21 @@ export default function Layout() {
                     {item.label}
                   </NavLink>
                 ))}
+                {user?.is_admin && (
+                  <NavLink
+                    to={ADMIN_ITEM.to}
+                    onClick={() => setMobileOpen(false)}
+                    className={({ isActive }) =>
+                      `block px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                        isActive
+                          ? "text-brand bg-brand/10"
+                          : "text-txt-secondary hover:text-txt hover:bg-base-700"
+                      }`
+                    }
+                  >
+                    {ADMIN_ITEM.label}
+                  </NavLink>
+                )}
                 <div className="flex items-center justify-between pt-3 mt-3 border-t border-line px-4">
                   <div>
                     <span className="text-sm font-medium">{user?.first_name}</span>

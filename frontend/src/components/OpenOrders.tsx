@@ -47,8 +47,8 @@ function OrderRow({ order }: { order: UserOrder }) {
   };
 
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
-      <div className="flex-1 min-w-0">
+    <div className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0 min-w-0">
+      <div className="flex-1 min-w-0 overflow-hidden">
         <div className="flex items-center gap-2 mb-1">
           <span
             className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
