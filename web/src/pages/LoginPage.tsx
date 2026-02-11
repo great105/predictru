@@ -82,14 +82,10 @@ export default function LoginPage() {
   const handleOpenTelegram = () => {
     if (!loginToken) return;
     startPolling();
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const deepLink = `login_${loginToken}`;
-    if (isMobile) {
-      window.open(`https://t.me/predskazu_bot?start=${deepLink}`, "_blank");
-    } else {
-      // tg:// opens Telegram Desktop directly (no browser intermediary)
-      window.location.href = `tg://resolve?domain=predskazu_bot&start=${deepLink}`;
-    }
+    window.open(
+      `https://t.me/predskazu_bot?start=login_${loginToken}`,
+      "_blank"
+    );
   };
 
   const handleRetry = async () => {
@@ -127,14 +123,7 @@ export default function LoginPage() {
               </div>
               <span className="text-lg font-display font-bold">ПредскажиРу</span>
             </div>
-            <a
-              href="https://t.me/predskazu_bot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-txt-secondary hover:text-brand transition-colors"
-            >
-              Открыть в Telegram
-            </a>
+            <span className="text-sm text-txt-muted font-mono">предскажи.рф</span>
           </div>
         </div>
       </div>
@@ -213,22 +202,10 @@ export default function LoginPage() {
                     Войти через Telegram
                   </button>
                   <p className="text-xs text-txt-muted max-w-sm">
-                    Откроется Telegram — нажмите <b>Start</b> в боте для подтверждения.
+                    Откроется Telegram — нажмите <b>Start</b> в боте.
                     <br />
                     Никаких паролей, вход за 3 секунды.
                   </p>
-                  {/* Fallback for users without tg:// protocol */}
-                  {loginToken && (
-                    <a
-                      href={`https://t.me/predskazu_bot?start=login_${loginToken}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => startPolling()}
-                      className="text-xs text-txt-muted hover:text-brand transition-colors inline-block"
-                    >
-                      Telegram не открылся? Нажмите здесь
-                    </a>
-                  )}
                 </>
               )}
             </div>
