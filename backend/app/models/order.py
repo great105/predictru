@@ -2,7 +2,7 @@ import enum
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import Enum, ForeignKey, Index, Numeric, String
+from sqlalchemy import Enum, ForeignKey, Index, Numeric
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -61,7 +61,11 @@ class Order(UUIDMixin, TimestampMixin, Base):
     __table_args__ = (
         Index(
             "ix_orders_book",
-            "market_id", "side", "status", "price", "created_at",
+            "market_id",
+            "side",
+            "status",
+            "price",
+            "created_at",
         ),
         Index("ix_orders_user_status", "user_id", "status"),
         Index("ix_orders_market_status", "market_id", "status"),

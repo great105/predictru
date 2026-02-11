@@ -31,7 +31,9 @@ class ResolutionService:
         if market is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Market not found")
         if market.status not in (MarketStatus.OPEN, MarketStatus.TRADING_CLOSED):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Market cannot be resolved")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Market cannot be resolved"
+            )
 
         market.status = MarketStatus.RESOLVED
         market.resolution_outcome = outcome
@@ -103,7 +105,9 @@ class ResolutionService:
         if market is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Market not found")
         if market.status == MarketStatus.RESOLVED:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot cancel resolved market")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Cannot cancel resolved market"
+            )
 
         market.status = MarketStatus.CANCELLED
 

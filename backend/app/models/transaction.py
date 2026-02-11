@@ -26,10 +26,15 @@ class TransactionType(str, enum.Enum):
 class Transaction(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "transactions"
 
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
-    market_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("markets.id"))
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
+    market_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("markets.id")
+    )
     type: Mapped[TransactionType] = mapped_column(
-        Enum(TransactionType, values_callable=lambda e: [x.value for x in e]), nullable=False
+        Enum(TransactionType, values_callable=lambda e: [x.value for x in e]),
+        nullable=False,
     )
 
     amount: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)

@@ -11,7 +11,12 @@ from app.core.security import (
     validate_telegram_login_widget,
 )
 from app.models.user import User
-from app.schemas.auth import AuthResponse, TelegramAuthRequest, TelegramLoginRequest, UserBrief
+from app.schemas.auth import (
+    AuthResponse,
+    TelegramAuthRequest,
+    TelegramLoginRequest,
+    UserBrief,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -34,9 +39,7 @@ async def authenticate_telegram(body: TelegramAuthRequest, db: DbSession):
         )
 
     # Upsert user
-    result = await db.execute(
-        select(User).where(User.telegram_id == telegram_id)
-    )
+    result = await db.execute(select(User).where(User.telegram_id == telegram_id))
     user = result.scalar_one_or_none()
 
     if user is None:
@@ -87,9 +90,7 @@ async def authenticate_telegram_login(body: TelegramLoginRequest, db: DbSession)
     telegram_id = body.id
 
     # Upsert user (same logic as Mini App auth)
-    result = await db.execute(
-        select(User).where(User.telegram_id == telegram_id)
-    )
+    result = await db.execute(select(User).where(User.telegram_id == telegram_id))
     user = result.scalar_one_or_none()
 
     if user is None:

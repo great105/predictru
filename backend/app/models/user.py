@@ -10,7 +10,9 @@ from app.models.base import Base, TimestampMixin, UUIDMixin
 class User(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "users"
 
-    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, nullable=False, index=True)
+    telegram_id: Mapped[int] = mapped_column(
+        BigInteger, unique=True, nullable=False, index=True
+    )
     username: Mapped[str | None] = mapped_column(String(255))
     first_name: Mapped[str] = mapped_column(String(255), default="")
     last_name: Mapped[str | None] = mapped_column(String(255))
@@ -18,9 +20,13 @@ class User(UUIDMixin, TimestampMixin, Base):
     language_code: Mapped[str] = mapped_column(String(10), default="ru")
 
     balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("1000.00"))
-    reserved_balance: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
+    reserved_balance: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), default=Decimal("0.00")
+    )
     total_trades: Mapped[int] = mapped_column(default=0)
-    total_profit: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("0.00"))
+    total_profit: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), default=Decimal("0.00")
+    )
     win_rate: Mapped[Decimal] = mapped_column(Numeric(5, 2), default=Decimal("0.00"))
 
     referral_code: Mapped[str] = mapped_column(
@@ -35,6 +41,4 @@ class User(UUIDMixin, TimestampMixin, Base):
     positions = relationship("Position", back_populates="user", lazy="selectin")
     transactions = relationship("Transaction", back_populates="user", lazy="selectin")
 
-    __table_args__ = (
-        Index("ix_users_referral_code", "referral_code"),
-    )
+    __table_args__ = (Index("ix_users_referral_code", "referral_code"),)

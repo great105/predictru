@@ -28,7 +28,8 @@ class MarketProposal(UUIDMixin, TimestampMixin, Base):
 
     status: Mapped[ProposalStatus] = mapped_column(
         Enum(ProposalStatus, values_callable=lambda e: [x.value for x in e]),
-        default=ProposalStatus.PENDING, index=True
+        default=ProposalStatus.PENDING,
+        index=True,
     )
     rejection_reason: Mapped[str | None] = mapped_column(Text)
     market_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))

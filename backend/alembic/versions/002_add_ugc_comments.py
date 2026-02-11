@@ -5,6 +5,7 @@ Revises: 001
 Create Date: 2025-01-15 00:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -34,8 +35,12 @@ def upgrade() -> None:
         ),
         sa.Column("rejection_reason", sa.Text()),
         sa.Column("market_id", UUID(as_uuid=True)),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"]),
     )
     op.create_index("ix_market_proposals_user_id", "market_proposals", ["user_id"])
@@ -49,14 +54,20 @@ def upgrade() -> None:
         sa.Column("user_id", UUID(as_uuid=True), nullable=False),
         sa.Column("text", sa.Text(), nullable=False),
         sa.Column("parent_id", UUID(as_uuid=True)),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
         sa.ForeignKeyConstraint(["market_id"], ["markets.id"]),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"]),
     )
     op.create_index("ix_comments_market_id", "comments", ["market_id"])
     op.create_index("ix_comments_user_id", "comments", ["user_id"])
-    op.create_index("ix_comments_market_created", "comments", ["market_id", "created_at"])
+    op.create_index(
+        "ix_comments_market_created", "comments", ["market_id", "created_at"]
+    )
 
 
 def downgrade() -> None:

@@ -1,8 +1,6 @@
 import time
-from functools import wraps
 
 from fastapi import HTTPException, Request, status
-from redis.asyncio import Redis
 
 from app.core.redis import get_redis
 
@@ -44,7 +42,9 @@ async def check_rate_limit(
         await redis.aclose()
 
 
-async def rate_limit_middleware(request: Request, max_requests: int = 60, window: int = 60):
+async def rate_limit_middleware(
+    request: Request, max_requests: int = 60, window: int = 60
+):
     """Rate limit by IP address."""
     client_ip = request.client.host if request.client else "unknown"
     key = f"rl:{client_ip}:{request.url.path}"

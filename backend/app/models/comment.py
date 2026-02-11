@@ -21,6 +21,4 @@ class Comment(UUIDMixin, TimestampMixin, Base):
 
     user = relationship("User", lazy="joined")
 
-    __table_args__ = (
-        Index("ix_comments_market_created", "market_id", "created_at"),
-    )
+    __table_args__ = (Index("ix_comments_market_created", "market_id", "created_at"),)

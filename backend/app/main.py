@@ -5,7 +5,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
 
-from app.api import admin, analytics, auth, b2b, comments, markets, orderbook, trade, ugc, users
+from app.api import (
+    admin,
+    analytics,
+    auth,
+    b2b,
+    comments,
+    markets,
+    orderbook,
+    trade,
+    ugc,
+    users,
+)
 from app.core.config import settings
 from app.tasks.broker import broker
 

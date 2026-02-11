@@ -22,7 +22,7 @@ class LeaderboardService:
         # Fallback: query DB directly
         result = await self.db.execute(
             select(User)
-            .where(User.is_active == True)
+            .where(User.is_active)
             .order_by(User.total_profit.desc())
             .limit(limit)
         )
@@ -30,15 +30,17 @@ class LeaderboardService:
 
         entries = []
         for rank, user in enumerate(users, 1):
-            entries.append({
-                "id": str(user.id),
-                "username": user.username,
-                "first_name": user.first_name,
-                "total_profit": float(user.total_profit),
-                "win_rate": float(user.win_rate),
-                "total_trades": user.total_trades,
-                "rank": rank,
-            })
+            entries.append(
+                {
+                    "id": str(user.id),
+                    "username": user.username,
+                    "first_name": user.first_name,
+                    "total_profit": float(user.total_profit),
+                    "win_rate": float(user.win_rate),
+                    "total_trades": user.total_trades,
+                    "rank": rank,
+                }
+            )
 
         # Cache for 5 minutes
         await self.redis.setex(cache_key, 300, json.dumps(entries))

@@ -46,6 +46,4 @@ class TradeFill(UUIDMixin, TimestampMixin, Base):
     buy_order = relationship("Order", foreign_keys=[buy_order_id])
     sell_order = relationship("Order", foreign_keys=[sell_order_id])
 
-    __table_args__ = (
-        Index("ix_trade_fills_market", "market_id", "created_at"),
-    )
+    __table_args__ = (Index("ix_trade_fills_market", "market_id", "created_at"),)

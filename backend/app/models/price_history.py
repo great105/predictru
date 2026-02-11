@@ -11,7 +11,9 @@ from app.models.base import Base, TimestampMixin, UUIDMixin
 class PriceHistory(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "price_history"
 
-    market_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("markets.id"), nullable=False, index=True)
+    market_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("markets.id"), nullable=False, index=True
+    )
     price_yes: Mapped[Decimal] = mapped_column(Numeric(8, 4), nullable=False)
     price_no: Mapped[Decimal] = mapped_column(Numeric(8, 4), nullable=False)
     q_yes: Mapped[Decimal] = mapped_column(Numeric(16, 6), nullable=False)
@@ -19,6 +21,4 @@ class PriceHistory(UUIDMixin, TimestampMixin, Base):
 
     market = relationship("Market", back_populates="price_history")
 
-    __table_args__ = (
-        Index("ix_price_history_market_time", "market_id", "created_at"),
-    )
+    __table_args__ = (Index("ix_price_history_market_time", "market_id", "created_at"),)

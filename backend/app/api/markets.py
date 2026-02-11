@@ -4,9 +4,8 @@ import uuid
 from fastapi import APIRouter, Query
 from sqlalchemy import select
 
-from app.core.dependencies import CurrentUser, DbSession, RedisConn
+from app.core.dependencies import DbSession, RedisConn
 from app.models.market import Market, MarketStatus
-from app.models.position import Position
 from app.models.price_history import PriceHistory
 from app.schemas.market import MarketDetail, MarketListResponse, MarketRead, PricePoint
 from app.services.market_maker.base import MarketState
@@ -19,11 +18,15 @@ CACHE_TTL = 30  # seconds
 
 def _market_to_read(market: Market) -> MarketRead:
     if market.amm_type == "clob":
-        price_yes = float(market.last_trade_price_yes) if market.last_trade_price_yes else 0.5
+        price_yes = (
+            float(market.last_trade_price_yes) if market.last_trade_price_yes else 0.5
+        )
         price_no = round(1.0 - price_yes, 4)
     else:
         mm = get_market_maker(market.amm_type)
-        state = MarketState(q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b)
+        state = MarketState(
+            q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b
+        )
         price_yes = round(mm.get_price(state, "yes"), 4)
         price_no = round(mm.get_price(state, "no"), 4)
     return MarketRead(
@@ -100,14 +103,19 @@ async def get_market(market_id: uuid.UUID, db: DbSession, redis: RedisConn):
     market = await db.get(Market, market_id)
     if market is None:
         from fastapi import HTTPException, status
+
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Market not found")
 
     if market.amm_type == "clob":
-        price_yes = float(market.last_trade_price_yes) if market.last_trade_price_yes else 0.5
+        price_yes = (
+            float(market.last_trade_price_yes) if market.last_trade_price_yes else 0.5
+        )
         price_no = round(1.0 - price_yes, 4)
     else:
         mm = get_market_maker(market.amm_type)
-        state = MarketState(q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b)
+        state = MarketState(
+            q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b
+        )
         price_yes = round(mm.get_price(state, "yes"), 4)
         price_no = round(mm.get_price(state, "no"), 4)
 

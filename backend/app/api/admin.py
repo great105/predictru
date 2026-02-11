@@ -2,7 +2,6 @@ import uuid
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
-from sqlalchemy import select
 
 from app.core.dependencies import CurrentAdmin, DbSession, RedisConn
 from app.models.market import Market
@@ -46,18 +45,24 @@ async def create_market(
         min_bet=body.min_bet,
         max_bet=body.max_bet,
         created_by=admin.id,
-        last_trade_price_yes=round(initial_price, 2) if body.amm_type == "clob" else None,
+        last_trade_price_yes=round(initial_price, 2)
+        if body.amm_type == "clob"
+        else None,
     )
     db.add(market)
     await db.commit()
     await db.refresh(market)
 
     if market.amm_type == "clob":
-        price_yes = float(market.last_trade_price_yes) if market.last_trade_price_yes else 0.5
+        price_yes = (
+            float(market.last_trade_price_yes) if market.last_trade_price_yes else 0.5
+        )
         price_no = round(1.0 - price_yes, 4)
     else:
         mm = get_market_maker(market.amm_type)
-        state = MarketState(q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b)
+        state = MarketState(
+            q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b
+        )
         price_yes = round(mm.get_price(state, "yes"), 4)
         price_no = round(mm.get_price(state, "no"), 4)
 
@@ -120,11 +125,15 @@ async def update_market(
     await db.refresh(market)
 
     if market.amm_type == "clob":
-        price_yes = float(market.last_trade_price_yes) if market.last_trade_price_yes else 0.5
+        price_yes = (
+            float(market.last_trade_price_yes) if market.last_trade_price_yes else 0.5
+        )
         price_no = round(1.0 - price_yes, 4)
     else:
         mm = get_market_maker(market.amm_type)
-        state = MarketState(q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b)
+        state = MarketState(
+            q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b
+        )
         price_yes = round(mm.get_price(state, "yes"), 4)
         price_no = round(mm.get_price(state, "no"), 4)
 

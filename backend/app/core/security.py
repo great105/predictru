@@ -79,9 +79,7 @@ def validate_telegram_login_widget(data: dict) -> dict | None:
     data_check_string = "\n".join(check_parts)
 
     # Secret key = SHA256(bot_token)  (different from initData which uses HMAC!)
-    secret_key = hashlib.sha256(
-        settings.TELEGRAM_BOT_TOKEN.encode()
-    ).digest()
+    secret_key = hashlib.sha256(settings.TELEGRAM_BOT_TOKEN.encode()).digest()
 
     calculated_hash = hmac.new(
         secret_key,
@@ -108,7 +106,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
         expires_delta or timedelta(minutes=settings.JWT_EXPIRE_MINUTES)
     )
     to_encode["exp"] = expire
-    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+    return jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
+    )
 
 
 def decode_access_token(token: str) -> dict | None:

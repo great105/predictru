@@ -4,10 +4,8 @@ from decimal import Decimal
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import select
 
 from app.models.market import Market, MarketStatus
-from app.models.user import User
 from tests.conftest import make_init_data
 
 

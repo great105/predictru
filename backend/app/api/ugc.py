@@ -36,6 +36,7 @@ class RejectRequest(BaseModel):
 @router.post("/proposals", response_model=ProposalResponse)
 async def create_proposal(body: ProposalCreate, user: CurrentUser, db: DbSession):
     from datetime import datetime
+
     proposal = MarketProposal(
         user_id=user.id,
         title=body.title,
@@ -100,16 +101,13 @@ async def pending_proposals(admin: CurrentAdmin, db: DbSession):
 
 
 @router.post("/proposals/{proposal_id}/approve")
-async def approve_proposal(
-    proposal_id: uuid.UUID, admin: CurrentAdmin, db: DbSession
-):
+async def approve_proposal(proposal_id: uuid.UUID, admin: CurrentAdmin, db: DbSession):
     proposal = await db.get(MarketProposal, proposal_id)
     if proposal is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Proposal not found")
     if proposal.status != ProposalStatus.PENDING:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Proposal is not pending")
 
-    from datetime import datetime
     from decimal import Decimal
 
     market = Market(

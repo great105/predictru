@@ -65,7 +65,9 @@ async def create_comment(
     if len(body.text.strip()) == 0:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Comment cannot be empty")
     if len(body.text) > 1000:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Comment too long (max 1000 chars)")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Comment too long (max 1000 chars)"
+        )
 
     comment = Comment(
         market_id=market_id,

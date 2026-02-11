@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_USERNAME: str = "predictru_bot"
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://predictru:changeme@postgres:5432/predictru"
+    DATABASE_URL: str = (
+        "postgresql+asyncpg://predictru:changeme@postgres:5432/predictru"
+    )
 
     # Redis
     REDIS_URL: str = "redis://redis:6379/0"

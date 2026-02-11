@@ -2,12 +2,11 @@ import uuid
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import CurrentUser, DbSession
 from app.models.market import Market
 from app.models.position import Position
-from app.models.transaction import Transaction, TransactionType
+from app.models.transaction import Transaction
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
@@ -20,8 +19,9 @@ async def market_stats(market_id: uuid.UUID, db: DbSession):
 
     # Count unique traders
     traders_result = await db.execute(
-        select(func.count(func.distinct(Position.user_id)))
-        .where(Position.market_id == market_id)
+        select(func.count(func.distinct(Position.user_id))).where(
+            Position.market_id == market_id
+        )
     )
     unique_traders = traders_result.scalar() or 0
 
@@ -35,7 +35,10 @@ async def market_stats(market_id: uuid.UUID, db: DbSession):
         .where(Transaction.market_id == market_id)
         .group_by(Transaction.type)
     )
-    tx_stats = {row[0].value: {"count": row[1], "volume": float(row[2] or 0)} for row in tx_result}
+    tx_stats = {
+        row[0].value: {"count": row[1], "volume": float(row[2] or 0)}
+        for row in tx_result
+    }
 
     return {
         "market_id": str(market_id),

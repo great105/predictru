@@ -27,7 +27,8 @@ class Market(UUIDMixin, TimestampMixin, Base):
 
     status: Mapped[MarketStatus] = mapped_column(
         Enum(MarketStatus, values_callable=lambda e: [x.value for x in e]),
-        default=MarketStatus.OPEN, index=True
+        default=MarketStatus.OPEN,
+        index=True,
     )
     resolution_outcome: Mapped[str | None] = mapped_column(String(10))  # "yes" or "no"
     resolution_source: Mapped[str] = mapped_column(Text, default="")  # Resolution Rules
@@ -40,7 +41,9 @@ class Market(UUIDMixin, TimestampMixin, Base):
 
     # Bet limits
     min_bet: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("1.00"))
-    max_bet: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=Decimal("10000.00"))
+    max_bet: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2), default=Decimal("10000.00")
+    )
 
     # CLOB last trade price
     last_trade_price_yes: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))

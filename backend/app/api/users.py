@@ -38,7 +38,6 @@ async def get_me(user: CurrentUser):
 
 @router.get("/me/positions")
 async def get_my_positions(user: CurrentUser, db: DbSession):
-    from app.models.market import Market
     from sqlalchemy.orm import selectinload
 
     result = await db.execute(
@@ -119,7 +118,9 @@ async def deposit(body: DepositRequest, user: CurrentUser, db: DbSession):
     if body.amount <= 0:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Amount must be positive")
     if body.amount > Decimal("10000"):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Maximum deposit is 10,000 PRC")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Maximum deposit is 10,000 PRC"
+        )
 
     user.balance += body.amount
 
@@ -132,7 +133,9 @@ async def deposit(body: DepositRequest, user: CurrentUser, db: DbSession):
     db.add(tx)
     await db.commit()
 
-    return WalletResponse(amount=body.amount, new_balance=user.balance, status="completed")
+    return WalletResponse(
+        amount=body.amount, new_balance=user.balance, status="completed"
+    )
 
 
 @router.post("/me/withdraw", response_model=WalletResponse)
@@ -199,9 +202,7 @@ async def apply_referral(code: str, user: CurrentUser, db: DbSession):
         )
 
     # Find inviter
-    result = await db.execute(
-        select(User).where(User.referral_code == code)
-    )
+    result = await db.execute(select(User).where(User.referral_code == code))
     inviter = result.scalar_one_or_none()
 
     if inviter is None:

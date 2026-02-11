@@ -5,6 +5,7 @@ Revises:
 Create Date: 2025-01-01 00:00:00.000000
 
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -37,8 +38,12 @@ def upgrade() -> None:
         sa.Column("referral_count", sa.Integer(), server_default="0"),
         sa.Column("daily_bonus_claimed_at", sa.String(30)),
         sa.Column("is_active", sa.Boolean(), server_default="true"),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
     )
     op.create_index("ix_users_telegram_id", "users", ["telegram_id"])
     op.create_index("ix_users_referral_code", "users", ["referral_code"])
@@ -53,7 +58,9 @@ def upgrade() -> None:
         sa.Column("image_url", sa.String(512)),
         sa.Column(
             "status",
-            sa.Enum("open", "trading_closed", "resolved", "cancelled", name="marketstatus"),
+            sa.Enum(
+                "open", "trading_closed", "resolved", "cancelled", name="marketstatus"
+            ),
             server_default="open",
         ),
         sa.Column("resolution_outcome", sa.String(10)),
@@ -67,8 +74,12 @@ def upgrade() -> None:
         sa.Column("resolved_at", sa.DateTime(timezone=True)),
         sa.Column("created_by", UUID(as_uuid=True)),
         sa.Column("is_featured", sa.Boolean(), server_default="false"),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
     )
     op.create_index("ix_markets_category", "markets", ["category"])
     op.create_index("ix_markets_status", "markets", ["status"])
@@ -85,9 +96,15 @@ def upgrade() -> None:
         sa.Column("shares", sa.Numeric(16, 6), server_default="0"),
         sa.Column("total_cost", sa.Numeric(12, 2), server_default="0"),
         sa.Column("avg_price", sa.Numeric(8, 4), server_default="0"),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.UniqueConstraint("user_id", "market_id", "outcome", name="uq_user_market_outcome"),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
+        sa.UniqueConstraint(
+            "user_id", "market_id", "outcome", name="uq_user_market_outcome"
+        ),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"]),
         sa.ForeignKeyConstraint(["market_id"], ["markets.id"]),
     )
@@ -103,7 +120,15 @@ def upgrade() -> None:
         sa.Column("market_id", UUID(as_uuid=True)),
         sa.Column(
             "type",
-            sa.Enum("buy", "sell", "payout", "bonus", "referral", "daily", name="transactiontype"),
+            sa.Enum(
+                "buy",
+                "sell",
+                "payout",
+                "bonus",
+                "referral",
+                "daily",
+                name="transactiontype",
+            ),
             nullable=False,
         ),
         sa.Column("amount", sa.Numeric(12, 2), nullable=False),
@@ -111,8 +136,12 @@ def upgrade() -> None:
         sa.Column("outcome", sa.String(10)),
         sa.Column("price_at_trade", sa.Numeric(8, 4), server_default="0"),
         sa.Column("description", sa.Text(), server_default=""),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"]),
     )
     op.create_index("ix_transactions_user_id", "transactions", ["user_id"])
@@ -128,12 +157,18 @@ def upgrade() -> None:
         sa.Column("price_no", sa.Numeric(8, 4), nullable=False),
         sa.Column("q_yes", sa.Numeric(16, 6), nullable=False),
         sa.Column("q_no", sa.Numeric(16, 6), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()
+        ),
         sa.ForeignKeyConstraint(["market_id"], ["markets.id"]),
     )
     op.create_index("ix_price_history_market_id", "price_history", ["market_id"])
-    op.create_index("ix_price_history_market_time", "price_history", ["market_id", "created_at"])
+    op.create_index(
+        "ix_price_history_market_time", "price_history", ["market_id", "created_at"]
+    )
 
 
 def downgrade() -> None:

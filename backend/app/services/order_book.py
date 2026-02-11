@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from fastapi import HTTPException, status
 from redis.asyncio import Redis
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -55,7 +55,9 @@ class OrderBookService:
                 "Price must be between 0.01 and 0.99",
             )
         if quantity <= 0:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Quantity must be positive")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Quantity must be positive"
+            )
 
         # Translate intent to book side + book price
         side, invert = _translate_intent(intent)
@@ -91,14 +93,18 @@ class OrderBookService:
             position = await self._get_or_create_position(user_id, market_id, "yes")
             available_shares = position.shares - position.reserved_shares
             if available_shares < quantity:
-                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Insufficient YES shares")
+                raise HTTPException(
+                    status.HTTP_400_BAD_REQUEST, "Insufficient YES shares"
+                )
             position.reserved_shares += quantity
         elif intent == OrderIntent.SELL_NO:
             # Reserve NO shares
             position = await self._get_or_create_position(user_id, market_id, "no")
             available_shares = position.shares - position.reserved_shares
             if available_shares < quantity:
-                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Insufficient NO shares")
+                raise HTTPException(
+                    status.HTTP_400_BAD_REQUEST, "Insufficient NO shares"
+                )
             position.reserved_shares += quantity
 
         # Create order
@@ -218,8 +224,7 @@ class OrderBookService:
             # BUY_YES + SELL_YES → transfer YES shares
             # SELL_NO + BUY_NO → transfer NO shares
             is_no_transfer = (
-                buy_intent == OrderIntent.SELL_NO
-                and sell_intent == OrderIntent.BUY_NO
+                buy_intent == OrderIntent.SELL_NO and sell_intent == OrderIntent.BUY_NO
             )
             share_type = "no" if is_no_transfer else "yes"
 
@@ -352,8 +357,12 @@ class OrderBookService:
         self.db.add(fill)
 
         # Record transactions — outcome reflects user's original intent
-        buy_outcome = "no" if buy_intent in (OrderIntent.BUY_NO, OrderIntent.SELL_NO) else "yes"
-        sell_outcome = "no" if sell_intent in (OrderIntent.BUY_NO, OrderIntent.SELL_NO) else "yes"
+        buy_outcome = (
+            "no" if buy_intent in (OrderIntent.BUY_NO, OrderIntent.SELL_NO) else "yes"
+        )
+        sell_outcome = (
+            "no" if sell_intent in (OrderIntent.BUY_NO, OrderIntent.SELL_NO) else "yes"
+        )
 
         buy_tx = Transaction(
             user_id=buy_order.user_id,
@@ -405,7 +414,9 @@ class OrderBookService:
         if order.user_id != user_id:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Not your order")
         if order.status in (OrderStatus.FILLED, OrderStatus.CANCELLED):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Order cannot be cancelled")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Order cannot be cancelled"
+            )
 
         unfilled = order.quantity - order.filled_quantity
         order.status = OrderStatus.CANCELLED
@@ -419,7 +430,9 @@ class OrderBookService:
             if order.original_intent == OrderIntent.BUY_NO:
                 intent_price = Decimal("1") - order.price
             reserve_release = intent_price * unfilled
-            user.reserved_balance = max(Decimal("0"), user.reserved_balance - reserve_release)
+            user.reserved_balance = max(
+                Decimal("0"), user.reserved_balance - reserve_release
+            )
         elif order.original_intent == OrderIntent.SELL_YES:
             pos = await self._get_or_create_position(user_id, order.market_id, "yes")
             pos.reserved_shares = max(Decimal("0"), pos.reserved_shares - unfilled)
@@ -472,7 +485,9 @@ class OrderBookService:
                     Decimal("0"), user.reserved_balance - intent_price * unfilled
                 )
             elif order.original_intent == OrderIntent.SELL_YES:
-                pos = await self._get_or_create_position(order.user_id, market_id, "yes")
+                pos = await self._get_or_create_position(
+                    order.user_id, market_id, "yes"
+                )
                 pos.reserved_shares = max(Decimal("0"), pos.reserved_shares - unfilled)
             elif order.original_intent == OrderIntent.SELL_NO:
                 pos = await self._get_or_create_position(order.user_id, market_id, "no")
@@ -492,8 +507,7 @@ class OrderBookService:
 
         # Bids (BUY side) — highest price first
         bid_result = await self.db.execute(
-            select(Order.price, Order.quantity, Order.filled_quantity)
-            .where(
+            select(Order.price, Order.quantity, Order.filled_quantity).where(
                 Order.market_id == market_id,
                 Order.side == OrderSide.BUY,
                 Order.status.in_([OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED]),
@@ -503,8 +517,7 @@ class OrderBookService:
 
         # Asks (SELL side) — lowest price first
         ask_result = await self.db.execute(
-            select(Order.price, Order.quantity, Order.filled_quantity)
-            .where(
+            select(Order.price, Order.quantity, Order.filled_quantity).where(
                 Order.market_id == market_id,
                 Order.side == OrderSide.SELL,
                 Order.status.in_([OrderStatus.OPEN, OrderStatus.PARTIALLY_FILLED]),
@@ -535,7 +548,11 @@ class OrderBookService:
 
         # Get last trade price
         market = await self.db.get(Market, market_id)
-        last_price = float(market.last_trade_price_yes) if market and market.last_trade_price_yes else None
+        last_price = (
+            float(market.last_trade_price_yes)
+            if market and market.last_trade_price_yes
+            else None
+        )
 
         book = {"bids": bids, "asks": asks, "last_price": last_price}
         await self.redis.setex(cache_key, 1, json.dumps(book))
@@ -575,9 +592,7 @@ class OrderBookService:
             for o in orders
         ]
 
-    async def get_trades(
-        self, market_id: uuid.UUID, limit: int = 50
-    ) -> list[dict]:
+    async def get_trades(self, market_id: uuid.UUID, limit: int = 50) -> list[dict]:
         result = await self.db.execute(
             select(TradeFill)
             .where(TradeFill.market_id == market_id)

@@ -1,6 +1,6 @@
 import math
 
-from app.services.market_maker.base import MarketMaker, MarketState
+from app.services.market_maker.base import MarketState
 
 
 def _logsumexp(a: float, b_val: float) -> float:
@@ -27,9 +27,9 @@ class LMSRMarketMaker:
         b = float(state.liquidity_b)
 
         if outcome == "yes":
-            q_target = q_yes
+            pass
         else:
-            q_target = q_no
+            pass
 
         # Using softmax form for stability
         max_q = max(q_yes, q_no)

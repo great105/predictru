@@ -4,7 +4,6 @@ import json
 import time
 from urllib.parse import urlencode
 
-import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
@@ -67,12 +66,14 @@ def make_init_data(
     username: str = "testuser",
 ) -> str:
     """Generate valid Telegram initData for testing."""
-    user = json.dumps({
-        "id": user_id,
-        "first_name": first_name,
-        "username": username,
-        "language_code": "ru",
-    })
+    user = json.dumps(
+        {
+            "id": user_id,
+            "first_name": first_name,
+            "username": username,
+            "language_code": "ru",
+        }
+    )
     auth_date = str(int(time.time()))
 
     params = {
@@ -80,9 +81,7 @@ def make_init_data(
         "auth_date": auth_date,
     }
 
-    data_check_string = "\n".join(
-        f"{k}={params[k]}" for k in sorted(params.keys())
-    )
+    data_check_string = "\n".join(f"{k}={params[k]}" for k in sorted(params.keys()))
 
     secret_key = hmac.new(
         b"WebAppData",

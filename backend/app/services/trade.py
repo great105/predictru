@@ -39,15 +39,24 @@ class TradeService:
         if market is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Market not found")
         if market.status != MarketStatus.OPEN:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Market is not open for trading")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Market is not open for trading"
+            )
         if market.amm_type != "lmsr":
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This market uses CLOB. Use /v1/orderbook/orders")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "This market uses CLOB. Use /v1/orderbook/orders",
+            )
 
         # Check bet limits
         if amount < market.min_bet:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Minimum bet is {market.min_bet} PRC")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, f"Minimum bet is {market.min_bet} PRC"
+            )
         if amount > market.max_bet:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Maximum bet is {market.max_bet} PRC")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, f"Maximum bet is {market.max_bet} PRC"
+            )
 
         user = await self.db.get(User, user_id, with_for_update=True)
         if user is None:
@@ -61,11 +70,15 @@ class TradeService:
 
         # Calculate shares via MarketMaker (on net amount after fee)
         mm = get_market_maker(market.amm_type)
-        state = MarketState(q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b)
+        state = MarketState(
+            q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b
+        )
         shares = mm.get_shares_for_amount(state, outcome, float(net_amount))
 
         if shares <= 0:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Cannot purchase zero shares")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Cannot purchase zero shares"
+            )
 
         # Update market quantities
         if outcome == "yes":
@@ -80,11 +93,13 @@ class TradeService:
 
         # Upsert position
         result = await self.db.execute(
-            select(Position).where(
+            select(Position)
+            .where(
                 Position.user_id == user_id,
                 Position.market_id == market_id,
                 Position.outcome == outcome,
-            ).with_for_update()
+            )
+            .with_for_update()
         )
         position = result.scalar_one_or_none()
 
@@ -120,7 +135,9 @@ class TradeService:
             amount=-amount,
             shares=Decimal(str(shares)),
             outcome=outcome,
-            price_at_trade=Decimal(str(round(price_yes if outcome == "yes" else price_no, 4))),
+            price_at_trade=Decimal(
+                str(round(price_yes if outcome == "yes" else price_no, 4))
+            ),
             description=f"Buy {outcome.upper()} | fee: {fee} PRC",
         )
         self.db.add(tx)
@@ -177,20 +194,27 @@ class TradeService:
         if market is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Market not found")
         if market.status != MarketStatus.OPEN:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Market is not open for trading")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Market is not open for trading"
+            )
         if market.amm_type != "lmsr":
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "This market uses CLOB. Use /v1/orderbook/orders")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "This market uses CLOB. Use /v1/orderbook/orders",
+            )
 
         user = await self.db.get(User, user_id, with_for_update=True)
         if user is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
 
         result = await self.db.execute(
-            select(Position).where(
+            select(Position)
+            .where(
                 Position.user_id == user_id,
                 Position.market_id == market_id,
                 Position.outcome == outcome,
-            ).with_for_update()
+            )
+            .with_for_update()
         )
         position = result.scalar_one_or_none()
 
@@ -199,7 +223,9 @@ class TradeService:
 
         # Calculate revenue
         mm = get_market_maker(market.amm_type)
-        state = MarketState(q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b)
+        state = MarketState(
+            q_yes=market.q_yes, q_no=market.q_no, liquidity_b=market.liquidity_b
+        )
         revenue = mm.get_sale_revenue(state, outcome, float(shares))
         revenue_decimal = Decimal(str(round(revenue, 2)))
 
@@ -232,7 +258,9 @@ class TradeService:
             amount=revenue_decimal,
             shares=shares,
             outcome=outcome,
-            price_at_trade=Decimal(str(round(price_yes if outcome == "yes" else price_no, 4))),
+            price_at_trade=Decimal(
+                str(round(price_yes if outcome == "yes" else price_no, 4))
+            ),
         )
         self.db.add(tx)
 
