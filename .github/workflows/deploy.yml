@@ -29,16 +29,20 @@ jobs:
             docker image prune -f
 
       - name: Health check
-        run: |
-          sleep 15
-          for i in $(seq 1 12); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.DEPLOY_HOST }}/health || echo "000")
-            if [ "$STATUS" = "200" ]; then
-              echo "Health check passed"
-              exit 0
-            fi
-            echo "Attempt $i/12: status $STATUS, retrying..."
-            sleep 10
-          done
-          echo "Health check failed after 2 minutes"
-          exit 1
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            for i in $(seq 1 12); do
+              STATUS=$(curl -sk -o /dev/null -w "%{http_code}" https://localhost/health)
+              if [ "$STATUS" = "200" ]; then
+                echo "Health check passed"
+                exit 0
+              fi
+              echo "Attempt $i/12: status $STATUS, retrying..."
+              sleep 10
+            done
+            echo "Health check failed after 2 minutes"
+            exit 1
