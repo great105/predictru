@@ -17,9 +17,10 @@ function timeLeft(closes: string): string {
 
 const CATEGORY_LABELS: Record<string, string> = {
   general: "Общее",
+  politics: "Политика",
+  economics: "Экономика",
   sports: "Спорт",
   crypto: "Крипто",
-  politics: "Политика",
   tech: "Технологии",
   entertainment: "Развлечения",
   science: "Наука",

@@ -5,6 +5,11 @@ import { useTradeStore, useAuthStore } from "../store";
 import type { MarketDetail } from "../types";
 
 const PRESETS = [10, 25, 50, 100, 250];
+const FEE = 0.02;
+
+function priceToMult(price: number): number {
+  return price > 0 ? (1 - FEE) / price : 0;
+}
 
 export default function TradePanel({ market }: { market: MarketDetail }) {
   const { outcome, amount, setOutcome, setAmount, reset } = useTradeStore();
@@ -16,6 +21,10 @@ export default function TradePanel({ market }: { market: MarketDetail }) {
   const numAmount = parseFloat(amount) || 0;
   const price = outcome === "yes" ? market.price_yes : market.price_no;
   const estimatedShares = numAmount > 0 ? numAmount / price : 0;
+  const yesMult = priceToMult(market.price_yes);
+  const noMult = priceToMult(market.price_no);
+  const activeMult = outcome === "yes" ? yesMult : noMult;
+  const potentialWin = numAmount * activeMult;
 
   const handleTrade = () => {
     if (numAmount <= 0) return;
@@ -69,8 +78,8 @@ export default function TradePanel({ market }: { market: MarketDetail }) {
           }`}
         >
           <div className="relative">
-            <p className="text-yes font-bold text-xl font-mono">{Math.round(market.price_yes * 100)}%</p>
-            <p className="text-xs text-txt-muted mt-1 font-medium">Да</p>
+            <p className="text-yes font-bold text-xl font-mono">x{yesMult.toFixed(1)}</p>
+            <p className="text-xs text-txt-muted mt-1 font-medium">Да <span className="font-mono opacity-60">{Math.round(market.price_yes * 100)}%</span></p>
           </div>
         </button>
         <button
@@ -82,8 +91,8 @@ export default function TradePanel({ market }: { market: MarketDetail }) {
           }`}
         >
           <div className="relative">
-            <p className="text-no font-bold text-xl font-mono">{Math.round(market.price_no * 100)}%</p>
-            <p className="text-xs text-txt-muted mt-1 font-medium">Нет</p>
+            <p className="text-no font-bold text-xl font-mono">x{noMult.toFixed(1)}</p>
+            <p className="text-xs text-txt-muted mt-1 font-medium">Нет <span className="font-mono opacity-60">{Math.round(market.price_no * 100)}%</span></p>
           </div>
         </button>
       </div>
@@ -119,27 +128,41 @@ export default function TradePanel({ market }: { market: MarketDetail }) {
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="bg-base-800 rounded-xl p-4 space-y-2.5 text-xs border border-line"
+          className="space-y-3"
         >
-          <div className="flex justify-between text-txt-muted">
-            <span>Цена за акцию</span>
-            <span className="font-mono text-txt-secondary">{(price * 100).toFixed(1)}%</span>
-          </div>
           {mode === "buy" && (
-            <div className="flex justify-between text-txt-muted">
-              <span>~Акций</span>
-              <span className="font-mono text-txt-secondary">{estimatedShares.toFixed(2)}</span>
+            <div className={`rounded-xl p-4 text-center border ${
+              outcome === "no" ? "bg-no/5 border-no/20" : "bg-yes/5 border-yes/20"
+            }`}>
+              <p className={`text-3xl font-bold font-mono ${outcome === "no" ? "text-no" : "text-yes"}`}>
+                +{(potentialWin - numAmount).toLocaleString("ru-RU", { maximumFractionDigits: 2 })} PRC
+              </p>
+              <p className={`text-sm mt-1 ${outcome === "no" ? "text-no/70" : "text-yes/70"}`}>
+                выигрыш {potentialWin.toLocaleString("ru-RU", { maximumFractionDigits: 2 })} PRC (x{activeMult.toFixed(1)})
+              </p>
             </div>
           )}
-          <div className="flex justify-between text-txt-muted">
-            <span>Комиссия (2%)</span>
-            <span className="font-mono text-txt-secondary">{(numAmount * 0.02).toFixed(2)} PRC</span>
-          </div>
-          <div className="border-t border-line pt-2.5 flex justify-between font-semibold text-txt">
-            <span>Потенц. выигрыш</span>
-            <span className={`font-mono ${outcome === "yes" ? "text-yes" : "text-no"}`}>
-              +{(estimatedShares * (1 - price)).toFixed(2)} PRC
-            </span>
+          <div className="bg-base-800 rounded-xl p-4 space-y-2.5 text-xs border border-line">
+            <div className="flex justify-between text-txt-muted">
+              <span>Цена за акцию</span>
+              <span className="font-mono text-txt-secondary">{(price * 100).toFixed(1)}%</span>
+            </div>
+            {mode === "buy" && (
+              <div className="flex justify-between text-txt-muted">
+                <span>~Акций</span>
+                <span className="font-mono text-txt-secondary">{estimatedShares.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-txt-muted">
+              <span>Комиссия (2%)</span>
+              <span className="font-mono text-txt-secondary">{(numAmount * 0.02).toFixed(2)} PRC</span>
+            </div>
+            <div className="border-t border-line pt-2.5 flex justify-between font-semibold text-txt">
+              <span>Если угадал</span>
+              <span className={`font-mono ${outcome === "yes" ? "text-yes" : "text-no"}`}>
+                {potentialWin.toLocaleString("ru-RU", { maximumFractionDigits: 2 })} PRC
+              </span>
+            </div>
           </div>
         </motion.div>
       )}

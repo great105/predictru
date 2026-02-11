@@ -6,9 +6,10 @@ import MarketCard from "../components/MarketCard";
 const CATEGORIES = [
   { value: "all", label: "Все рынки" },
   { value: "general", label: "Общее" },
+  { value: "politics", label: "Политика" },
+  { value: "economics", label: "Экономика" },
   { value: "sports", label: "Спорт" },
   { value: "crypto", label: "Крипто" },
-  { value: "politics", label: "Политика" },
   { value: "tech", label: "Технологии" },
   { value: "entertainment", label: "Развлечения" },
 ];

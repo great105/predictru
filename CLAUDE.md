@@ -97,8 +97,9 @@ taskiq scheduler app.tasks.scheduler:scheduler --fs-discover # Scheduler
 
 **Auth flow (dual)**:
 - **Mini App**: Telegram `initData` → HMAC-SHA256 validation via `core/security.py` → JWT
-- **Web**: Telegram Login Widget → SHA256(bot_token) validation via `core/security.py` → JWT
+- **Web**: Bot-based deep link auth → `POST /v1/auth/bot-login-init` generates token → user opens `https://t.me/predskazu_bot?start=login_TOKEN` → bot confirms via Redis → web polls `GET /v1/auth/bot-login-status/TOKEN` → JWT
 - Both share the same user table and JWT tokens
+- Redis key pattern: `web_login:{token}` with 5min TTL for auth bridge between bot and backend
 
 **Dual-mode trading**:
 - `market.amm_type == "lmsr"` → `TradeService` (`services/trade.py`) uses LMSR MarketMaker for buy/sell
@@ -140,9 +141,9 @@ React 18 + Vite + TypeScript + TailwindCSS + Framer Motion + Recharts + Zustand 
 - `tailwind.config.ts` — Color system (base-950..300, brand, amber, yes/no, txt hierarchy, line), fonts, max-w-site
 - `src/index.css` — Component classes (card, btn-primary/secondary/ghost, chip, badge, input-field, text-gradient, shimmer)
 - `src/components/Layout.tsx` — Horizontal top navbar, footer, mobile hamburger
-- `src/pages/LoginPage.tsx` — Landing page with Telegram Login Widget
+- `src/pages/LoginPage.tsx` — Landing page with bot-based Telegram auth
 
-**Auth**: Telegram Login Widget (one-click, no typing). Same backend API `/v1/auth/telegram-login`.
+**Auth**: Bot-based deep link auth (one-click, opens Telegram app). Flow: init token → open `t.me/predskazu_bot?start=login_TOKEN` → bot confirms via Redis → web polls for JWT.
 
 **DO NOT modify**: `api.ts`, `hooks.ts`, `store.ts`, `types.ts`, `App.tsx`, `main.tsx` — shared logic that works for both auth flows.
 
@@ -150,7 +151,9 @@ React 18 + Vite + TypeScript + TailwindCSS + Framer Motion + Recharts + Zustand 
 
 aiogram 3 with aiohttp webhook server on port 8081. Russian-language UI with rich HTML formatting.
 
-**Handlers**: /start (welcome + Mini App button), /balance (profile stats), /top (leaderboard), /notifications (settings)
+**Handlers**: /start (welcome + Mini App button + web login deep link handling), /balance (profile stats), /top (leaderboard), /notifications (settings)
+
+**Web login bridge**: Bot handles `login_` deep links by writing confirmed user data to Redis (`web_login:{token}`), which backend polls to complete web auth.
 
 **Startup**: Sets bot commands, MenuButtonWebApp, description, short description.
 
@@ -189,7 +192,9 @@ Auto-deploys on push to `main` branch:
 1. Runs CI first (`needs: ci`)
 2. SSH into production server at `/opt/predictru`
 3. `git fetch && git reset --hard` + `docker compose build --parallel` + `docker compose up -d`
-4. Health check on `https://localhost/health`
+4. `docker compose restart nginx` (required: nginx caches upstream DNS, new API container gets new IP)
+5. `seed_markets.py` — idempotent seed of prediction markets (skips existing)
+6. Health check on `https://localhost/health` (12 attempts, 10s apart)
 
 **Required GitHub Secrets**:
 - `DEPLOY_HOST` - Server IP/domain
@@ -202,6 +207,12 @@ Three migrations:
 - `001` — Initial schema (users, markets, positions, transactions, price_history, comments, market_proposals)
 - `002` — B2B tables (api_keys, etc.)
 - `003` — Missing columns + new tables (orders, trade_fills with enums: OrderSide, OrderStatus, OrderIntent, SettlementType; extended TransactionType)
+
+### Seed Script (`backend/scripts/seed_markets.py`)
+Idempotent script that creates initial prediction markets. Checks if markets already exist before inserting. Run inside API container: `docker compose exec -T api python scripts/seed_markets.py`. Categories: politics, economics, crypto, sports, general.
+
+### SSH Access
+Production server accessible via SSH: `ssh root@195.26.225.39`. Project at `/opt/predictru`.
 
 ## Known Pitfalls
 
@@ -216,3 +227,6 @@ Three migrations:
 - **Docker .env reload**: `docker compose restart` does NOT re-read .env. Use `docker compose up -d --force-recreate` instead
 - **Alembic enums**: Don't manually `CREATE TYPE` + `create_type=False` — let `sa.Enum()` handle creation. `ALTER TYPE ADD VALUE` can't run inside transactions (wrap with `COMMIT`/`BEGIN`)
 - **Domain punycode**: предскажи.рф = `xn--80ahcgkj6ail.xn--p1ai` (NOT `xn--e1afkbacb0ada8j`)
+- **Nginx upstream DNS caching**: Nginx resolves upstream hostnames at startup and caches IPs. After `docker compose up -d` recreates API container (new IP), must `docker compose restart nginx` or health checks get 502
+- **FastAPI router prefix**: Routers with `prefix="/auth"` — route decorators must NOT include `/auth` again (e.g., use `@router.post("/bot-login-init")` not `@router.post("/auth/bot-login-init")`)
+- **Telegram Login Widget**: Asks users for phone number — not suitable for one-click login. Use bot-based deep link auth instead (`https://t.me/bot?start=login_TOKEN`)
