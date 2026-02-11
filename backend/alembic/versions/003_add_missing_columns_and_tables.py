@@ -148,9 +148,7 @@ def upgrade() -> None:
             "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()
         ),
     )
-    op.create_index(
-        "ix_trade_fills_market", "trade_fills", ["market_id", "created_at"]
-    )
+    op.create_index("ix_trade_fills_market", "trade_fills", ["market_id", "created_at"])
 
     # Extend transactiontype enum with new values
     # NOTE: ALTER TYPE ADD VALUE cannot run inside a transaction
