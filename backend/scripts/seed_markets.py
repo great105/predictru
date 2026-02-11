@@ -409,7 +409,9 @@ async def seed():
                 max_bet=Decimal("10000"),
             )
             db.add(market)
-            print(f"  + [CLOB] {m['title'][:55]}... ({m['category']}, {m['initial_price']})")
+            print(
+                f"  + [CLOB] {m['title'][:55]}... ({m['category']}, {m['initial_price']})"
+            )
 
         for m in LMSR_MARKETS:
             closes_str = m["closes_at"]
@@ -439,11 +441,15 @@ async def seed():
                 max_bet=Decimal("10000"),
             )
             db.add(market)
-            print(f"  + [LMSR] {m['title'][:55]}... ({m['category']}, {m['initial_price']})")
+            print(
+                f"  + [LMSR] {m['title'][:55]}... ({m['category']}, {m['initial_price']})"
+            )
 
         await db.commit()
         total = len(MARKETS) + len(LMSR_MARKETS)
-        print(f"\nSeeded {total} markets ({len(MARKETS)} CLOB + {len(LMSR_MARKETS)} LMSR).")
+        print(
+            f"\nSeeded {total} markets ({len(MARKETS)} CLOB + {len(LMSR_MARKETS)} LMSR)."
+        )
 
 
 if __name__ == "__main__":
