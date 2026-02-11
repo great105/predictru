@@ -10,6 +10,8 @@ html, body {
   color: var(--tg-theme-text-color, #000000);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 .safe-area-bottom {

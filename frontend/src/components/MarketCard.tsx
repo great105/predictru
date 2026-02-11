@@ -31,7 +31,7 @@ export function MarketCard({ market }: MarketCardProps) {
               : "bg-purple-50 text-purple-600"
           }`}
         >
-          {market.amm_type === "clob" ? "Биржа" : "Авто"}
+          {market.amm_type === "clob" ? "Order Book" : "AMM"}
         </span>
         <span>{formatTimeLeft(market.closes_at)}</span>
       </div>
