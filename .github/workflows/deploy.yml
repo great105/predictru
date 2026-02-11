@@ -26,6 +26,7 @@ jobs:
             git reset --hard origin/main
             docker compose build --parallel
             docker compose up -d --remove-orphans
+            docker compose restart nginx
             sleep 5
             docker compose exec -T api python scripts/seed_markets.py || true
             docker image prune -f
