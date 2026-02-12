@@ -6,7 +6,6 @@ import { useState } from "react";
 const NAV_ITEMS: { to: string; label: string; end?: boolean }[] = [
   { to: "/", label: "Рынки", end: true },
   { to: "/portfolio", label: "Портфель" },
-  { to: "/leaderboard", label: "Рейтинг" },
   { to: "/profile", label: "Профиль" },
 ];
 

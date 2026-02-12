@@ -6,7 +6,7 @@ import { Layout } from "@/components/Layout";
 import { HomePage } from "@/pages/HomePage";
 import { MarketPage } from "@/pages/MarketPage";
 import { PortfolioPage } from "@/pages/PortfolioPage";
-import { LeaderboardPage } from "@/pages/LeaderboardPage";
+
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ProposePage } from "@/pages/ProposePage";
 import { AdminPage } from "@/pages/AdminPage";
@@ -101,7 +101,7 @@ export function App() {
               <Route element={<Layout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/portfolio" element={<PortfolioPage />} />
-                <Route path="/leaderboard" element={<LeaderboardPage />} />
+
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>
               <Route path="/market/:id" element={<MarketPage />} />

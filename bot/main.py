@@ -10,7 +10,7 @@ from aiogram.types import (
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 from config import settings
-from handlers import start, balance, top, notifications
+from handlers import start, balance, notifications
 
 logging.basicConfig(level=logging.DEBUG if settings.APP_DEBUG else logging.INFO)
 logger = logging.getLogger(__name__)
@@ -21,7 +21,6 @@ dp = Dispatcher()
 dp.include_routers(
     start.router,
     balance.router,
-    top.router,
     notifications.router,
 )
 
@@ -36,7 +35,6 @@ async def on_startup(app: web.Application):
         [
             BotCommand(command="start", description="\U0001f680 Начать"),
             BotCommand(command="balance", description="\U0001f4b0 Мой баланс"),
-            BotCommand(command="top", description="\U0001f3c6 Топ трейдеров"),
         ]
     )
 

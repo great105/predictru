@@ -91,10 +91,6 @@ async def cmd_start(message: Message):
                     text="\U0001f4b0 Мой баланс",
                     callback_data="quick_balance",
                 ),
-                InlineKeyboardButton(
-                    text="\U0001f3c6 Топ трейдеров",
-                    callback_data="quick_top",
-                ),
             ],
         ]
     )

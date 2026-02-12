@@ -7,7 +7,7 @@ import HomePage from "./pages/HomePage";
 import MarketPage from "./pages/MarketPage";
 import PortfolioPage from "./pages/PortfolioPage";
 import ProfilePage from "./pages/ProfilePage";
-import LeaderboardPage from "./pages/LeaderboardPage";
+
 import AdminPage from "./pages/AdminPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -34,7 +34,7 @@ export default function App() {
         <Route path="market/:id" element={<MarketPage />} />
         <Route path="portfolio" element={<PortfolioPage />} />
         <Route path="profile" element={<ProfilePage />} />
-        <Route path="leaderboard" element={<LeaderboardPage />} />
+
         <Route path="admin" element={<AdminPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
