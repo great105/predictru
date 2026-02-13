@@ -22,7 +22,7 @@ async def cmd_start(message: Message):
     # ── Private bet deep link: bet_XXXXXX ──
     if len(args) > 1 and args[1].startswith("bet_"):
         bet_code = args[1][4:]
-        webapp_url = f"{settings.WEBAPP_URL}?startapp=bet_{bet_code}"
+        webapp_url = f"{settings.WEBAPP_URL}/bet/join/{bet_code}"
 
         # Try to fetch bet details for a rich invite message
         bet_info = None

@@ -19,9 +19,13 @@ if (tg) {
   }
 
   // Deep link: bet_XXXXXX → redirect to join page
+  // Source 1: start_param from t.me/bot?startapp=bet_CODE direct links
   const startParam = (tg.initDataUnsafe as any)?.start_param as string | undefined;
-  if (startParam?.startsWith("bet_")) {
-    const betCode = startParam.slice(4);
+  // Source 2: ?startapp= query param (fallback when opened via WebAppInfo URL)
+  const urlStartapp = new URLSearchParams(window.location.search).get("startapp");
+  const deepLink = startParam || urlStartapp || "";
+  if (deepLink.startsWith("bet_")) {
+    const betCode = deepLink.slice(4);
     if (betCode.length >= 4) {
       window.history.replaceState(null, "", `/bet/join/${betCode}`);
     }
