@@ -405,7 +405,10 @@ class PrivateBetService:
                     ),
                 )
             )
-            .options(selectinload(PrivateBet.creator))
+            .options(
+                selectinload(PrivateBet.creator),
+                selectinload(PrivateBet.participants),
+            )
             .order_by(PrivateBet.created_at.desc())
             .limit(50)
         )

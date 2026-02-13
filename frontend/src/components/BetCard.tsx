@@ -16,6 +16,14 @@ export function BetCard({ bet }: { bet: PrivateBet }) {
   const yesPercent = total > 0 ? Math.round((bet.yes_count / total) * 100) : 50;
   const statusInfo = STATUS_LABELS[bet.status] ?? STATUS_LABELS.open;
 
+  // Calculate profit/loss for resolved/cancelled bets
+  const stake = Number(bet.stake_amount);
+  const payout = Number(bet.my_payout ?? 0);
+  const profit = payout > 0 ? payout - stake : 0;
+  const isWin = bet.status === "resolved" && bet.my_outcome === bet.resolution_outcome;
+  const isLoss = bet.status === "resolved" && bet.my_outcome !== bet.resolution_outcome;
+  const isRefund = bet.status === "cancelled" && payout > 0;
+
   return (
     <Link
       to={`/bet/${bet.id}`}
@@ -24,10 +32,34 @@ export function BetCard({ bet }: { bet: PrivateBet }) {
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <h3 className="text-sm font-medium leading-tight flex-1">{bet.title}</h3>
-        <span className={`text-xs font-medium shrink-0 ${statusInfo.color}`}>
-          {statusInfo.text}
-        </span>
+        <div className="flex items-center gap-2 shrink-0">
+          {isWin && (
+            <span className="text-xs font-bold text-green-400">+{formatPRC(profit)}</span>
+          )}
+          {isLoss && (
+            <span className="text-xs font-bold text-red-400">-{formatPRC(stake)}</span>
+          )}
+          {isRefund && (
+            <span className="text-xs font-medium text-tg-hint">±0</span>
+          )}
+          <span className={`text-xs font-medium ${statusInfo.color}`}>
+            {statusInfo.text}
+          </span>
+        </div>
       </div>
+
+      {/* My side badge */}
+      {bet.my_outcome && (
+        <div className="mb-2">
+          <span className={`text-xs px-2 py-0.5 rounded-full ${
+            bet.my_outcome === "yes"
+              ? "bg-green-500/15 text-green-400"
+              : "bg-red-500/15 text-red-400"
+          }`}>
+            Моя ставка: {bet.my_outcome === "yes" ? "ДА" : "НЕТ"}
+          </span>
+        </div>
+      )}
 
       {/* YES/NO bar */}
       <div className="h-2 rounded-full bg-white/10 overflow-hidden mb-2">

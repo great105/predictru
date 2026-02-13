@@ -47,6 +47,8 @@ class PrivateBetRead(BaseModel):
     created_at: datetime
     creator_name: str
     resolution_outcome: str | None = None
+    my_outcome: str | None = None
+    my_payout: Decimal | None = None
 
     model_config = {"from_attributes": True}
 

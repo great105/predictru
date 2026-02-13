@@ -146,6 +146,9 @@ export interface PrivateBet {
   total_pool: number;
   created_at: string;
   creator_name: string;
+  resolution_outcome: string | null;
+  my_outcome: string | null;
+  my_payout: number | null;
 }
 
 export interface BetParticipant {

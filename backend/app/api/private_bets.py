@@ -16,7 +16,16 @@ from app.services.private_bet import PrivateBetService
 router = APIRouter(prefix="/bets", tags=["private-bets"])
 
 
-def _bet_to_read(bet) -> PrivateBetRead:
+def _bet_to_read(bet, user_id: uuid.UUID | None = None) -> PrivateBetRead:
+    my_outcome = None
+    my_payout = None
+    if user_id and hasattr(bet, "participants"):
+        for p in bet.participants:
+            if p.user_id == user_id:
+                my_outcome = p.outcome
+                my_payout = p.payout
+                break
+
     return PrivateBetRead(
         id=bet.id,
         title=bet.title,
@@ -31,6 +40,8 @@ def _bet_to_read(bet) -> PrivateBetRead:
         created_at=bet.created_at,
         creator_name=bet.creator.first_name if bet.creator else "",
         resolution_outcome=bet.resolution_outcome,
+        my_outcome=my_outcome,
+        my_payout=my_payout,
     )
 
 
@@ -99,7 +110,7 @@ async def create_bet(
 async def my_bets(user: CurrentUser, db: DbSession, redis: RedisConn):
     service = PrivateBetService(db, redis)
     bets = await service.get_my_bets(user.id)
-    return [_bet_to_read(b) for b in bets]
+    return [_bet_to_read(b, user.id) for b in bets]
 
 
 @router.get("/preview/{code}", response_model=PrivateBetRead)
