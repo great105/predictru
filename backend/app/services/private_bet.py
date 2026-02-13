@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from aiogram import Bot
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from fastapi import HTTPException, status
 from redis.asyncio import Redis
 from sqlalchemy import or_, select
@@ -228,7 +229,19 @@ class PrivateBetService:
             text = (
                 f"🗳 <b>Голосование началось!</b>\n\n"
                 f"Спор: <i>{bet.title}</i>\n\n"
-                f"Откройте приложение и проголосуйте за реальный исход."
+                f"Нажмите кнопку и проголосуйте за реальный исход."
+            )
+
+            vote_url = f"{settings.WEBAPP_URL}/bet/{bet.id}"
+            keyboard = InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(
+                            text="🗳 Проголосовать",
+                            web_app=WebAppInfo(url=vote_url),
+                        )
+                    ]
+                ]
             )
 
             for p in participants:
@@ -238,6 +251,7 @@ class PrivateBetService:
                             p.user.telegram_id,
                             text,
                             parse_mode="HTML",
+                            reply_markup=keyboard,
                         )
                     except Exception:
                         pass
@@ -287,10 +301,10 @@ class PrivateBetService:
         else:
             bet.no_votes += 1
 
-        # Check if all participants voted → auto-resolve
+        # Check if majority reached → auto-resolve
         total_participants = bet.yes_count + bet.no_count
-        total_votes = bet.yes_votes + bet.no_votes
-        if total_votes >= total_participants:
+        majority = total_participants // 2 + 1
+        if bet.yes_votes >= majority or bet.no_votes >= majority:
             await self._resolve_bet(bet)
 
         await self.db.commit()

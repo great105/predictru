@@ -143,6 +143,11 @@ export function BetDetailPage() {
                 >
                   {p.outcome === "yes" ? "ДА" : "НЕТ"}
                 </span>
+                {(bet.status === "voting" || bet.status === "resolved") && (
+                  <span className={`text-xs ${p.vote ? "text-white/70" : "text-tg-hint"}`}>
+                    {p.vote ? (p.vote === "yes" ? "🗳 ДА" : "🗳 НЕТ") : "⏳"}
+                  </span>
+                )}
                 {Number(p.payout) > 0 && (
                   <span className="text-xs text-amber-400">+{formatPRC(p.payout)}</span>
                 )}
