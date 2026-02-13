@@ -132,14 +132,6 @@ export function useTransactions() {
   });
 }
 
-export function useLeaderboard(period = "all") {
-  return useQuery({
-    queryKey: ["leaderboard", period],
-    queryFn: () => usersApi.leaderboard(period),
-    staleTime: 60_000,
-  });
-}
-
 export function useDailyBonus() {
   const qc = useQueryClient();
   const updateBalance = useAuthStore((s) => s.updateBalance);

@@ -1,3 +1,4 @@
+import html
 import logging
 
 from aiogram import Bot
@@ -6,6 +7,10 @@ from app.core.config import settings
 from app.tasks.broker import broker
 
 logger = logging.getLogger(__name__)
+
+
+def _outcome_label(outcome: str) -> str:
+    return "ДА" if outcome.lower() == "yes" else "НЕТ"
 
 
 @broker.task
@@ -18,27 +23,35 @@ async def send_resolution_notifications(
 ) -> None:
     """Send notifications to all participants of a resolved market."""
     bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+    safe_title = html.escape(market_title)
+    label = _outcome_label(outcome)
 
     try:
         for winner in winners:
             try:
+                text = (
+                    f"🎉 <b>Твой прогноз сбылся!</b>\n\n"
+                    f"📌 {safe_title}\n"
+                    f"🎯 Исход: <b>{label}</b>\n"
+                    f"💰 Выплата: <b>+{winner['payout']:.2f} PRC</b>\n\n"
+                    f"🔥 Так держать!"
+                )
                 await bot.send_message(
-                    winner["telegram_id"],
-                    f"Your prediction was correct!\n\n"
-                    f"Market: {market_title}\n"
-                    f"Outcome: {outcome.upper()}\n"
-                    f"Payout: +{winner['payout']:.2f} PRC",
+                    winner["telegram_id"], text, parse_mode="HTML"
                 )
             except Exception as e:
                 logger.error(f"Failed to notify winner {winner['telegram_id']}: {e}")
 
         for loser in losers:
             try:
+                text = (
+                    f"📢 <b>Рынок закрыт</b>\n\n"
+                    f"📌 {safe_title}\n"
+                    f"🎯 Исход: <b>{label}</b>\n\n"
+                    f"💪 В следующий раз повезёт!"
+                )
                 await bot.send_message(
-                    loser["telegram_id"],
-                    f"Market resolved: {market_title}\n"
-                    f"Outcome: {outcome.upper()}\n"
-                    f"Better luck next time!",
+                    loser["telegram_id"], text, parse_mode="HTML"
                 )
             except Exception as e:
                 logger.error(f"Failed to notify loser {loser['telegram_id']}: {e}")
@@ -56,15 +69,18 @@ async def send_trade_confirmation(
 ) -> None:
     """Send trade confirmation to user."""
     bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+    safe_title = html.escape(market_title)
+    label = _outcome_label(outcome)
+
     try:
-        await bot.send_message(
-            telegram_id,
-            f"Trade confirmed!\n\n"
-            f"Market: {market_title}\n"
-            f"Side: {outcome.upper()}\n"
-            f"Shares: {shares:.2f}\n"
-            f"Cost: {cost:.2f} PRC",
+        text = (
+            f"✅ <b>Сделка подтверждена!</b>\n\n"
+            f"📌 {safe_title}\n"
+            f"🎯 Сторона: <b>{label}</b>\n"
+            f"📊 Акций: <b>{shares:.2f}</b>\n"
+            f"💳 Стоимость: <b>{cost:.2f} PRC</b>"
         )
+        await bot.send_message(telegram_id, text, parse_mode="HTML")
     except Exception as e:
         logger.error(f"Failed to send trade confirmation to {telegram_id}: {e}")
     finally:

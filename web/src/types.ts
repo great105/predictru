@@ -122,16 +122,6 @@ export interface Transaction {
   created_at: string;
 }
 
-export interface LeaderboardEntry {
-  rank: number;
-  user_id: string;
-  username: string | null;
-  first_name: string;
-  total_profit: number;
-  win_rate: number;
-  total_trades: number;
-}
-
 export interface TelegramLoginData {
   id: number;
   first_name: string;

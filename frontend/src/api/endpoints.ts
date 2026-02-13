@@ -1,6 +1,5 @@
 import api from "./client";
 import type {
-  LeaderboardEntry,
   Market,
   MarketDetail,
   OrderBook,
@@ -50,14 +49,6 @@ export const usersApi = {
 
   transactions: (params?: { limit?: number; cursor?: string }) =>
     api.get<PaginatedResponse<Transaction>>("/users/me/transactions", { params }),
-
-  leaderboard: (period?: string) =>
-    api.get<LeaderboardEntry[]>("/users/leaderboard", { params: { period } }),
-
-  dailyBonus: () => api.post<{ amount: number; new_balance: number }>("/users/me/daily-bonus"),
-
-  applyReferral: (code: string) =>
-    api.post<{ bonus: number }>(`/users/me/referral/${code}`),
 
   deposit: (amount: number) =>
     api.post<{ amount: number; new_balance: number; status: string }>("/users/me/deposit", { amount }),

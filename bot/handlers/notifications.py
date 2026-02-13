@@ -1,12 +1,8 @@
 from aiogram import Router, F
-from aiogram.types import (
-    CallbackQuery,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton,
-    WebAppInfo,
-)
+from aiogram.types import CallbackQuery
 
 from config import settings
+from templates import Msg, Kb
 
 router = Router()
 
@@ -17,23 +13,14 @@ async def open_market(callback: CallbackQuery):
 
     if market_id == "home":
         webapp_url = settings.WEBAPP_URL
-        text = "\U0001f4ca Открой приложение и выбери рынок:"
+        text = Msg.open_app_prompt()
     else:
         webapp_url = f"{settings.WEBAPP_URL}/market/{market_id}"
-        text = "\U0001f4c8 Нажми, чтобы открыть рынок:"
+        text = Msg.open_market_prompt()
 
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="\U0001f680 Открыть",
-                    web_app=WebAppInfo(url=webapp_url),
-                )
-            ]
-        ]
+    await callback.message.answer(
+        text, reply_markup=Kb.open_market(webapp_url)
     )
-
-    await callback.message.answer(text, reply_markup=keyboard)
     await callback.answer()
 
 

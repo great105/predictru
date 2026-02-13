@@ -12,19 +12,6 @@ function cost(qYes: number, qNo: number, b: number): number {
   return b * logsumexp(qYes / b, qNo / b);
 }
 
-export function calculatePrice(
-  qYes: number,
-  qNo: number,
-  b: number,
-  outcome: "yes" | "no"
-): number {
-  const maxQ = Math.max(qYes, qNo);
-  const expYes = Math.exp((qYes - maxQ) / b);
-  const expNo = Math.exp((qNo - maxQ) / b);
-  const total = expYes + expNo;
-  return outcome === "yes" ? expYes / total : expNo / total;
-}
-
 export function estimateShares(
   qYes: number,
   qNo: number,
@@ -54,19 +41,4 @@ export function estimateShares(
   }
 
   return low;
-}
-
-export function calculateCost(
-  qYes: number,
-  qNo: number,
-  b: number,
-  outcome: "yes" | "no",
-  shares: number
-): number {
-  const costBefore = cost(qYes, qNo, b);
-  const costAfter =
-    outcome === "yes"
-      ? cost(qYes + shares, qNo, b)
-      : cost(qYes, qNo + shares, b);
-  return costAfter - costBefore;
 }

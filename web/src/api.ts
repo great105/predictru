@@ -12,7 +12,6 @@ import type {
   Transaction,
   User,
   UserOrder,
-  LeaderboardEntry,
 } from "./types";
 
 const api = axios.create({
@@ -78,8 +77,6 @@ export const usersApi = {
     api.post("/users/me/deposit", { amount }).then((r) => r.data),
   dailyBonus: () =>
     api.post("/users/me/daily-bonus").then((r) => r.data),
-  leaderboard: (period?: string) =>
-    api.get<LeaderboardEntry[]>("/users/leaderboard", { params: { period } }).then((r) => r.data),
 };
 
 export default api;

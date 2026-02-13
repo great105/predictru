@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "python bot/tools/validate_bot_ui.py bot/",
+        "description": "Validate bot UI patterns after editing bot/ files"
+      }
+    ]
+  }
+}

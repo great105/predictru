@@ -80,16 +80,6 @@ export interface PaginatedResponse<T> {
   next_cursor: string | null;
 }
 
-export interface LeaderboardEntry {
-  id: string;
-  username: string | null;
-  first_name: string;
-  total_profit: number;
-  win_rate: number;
-  total_trades: number;
-  rank: number;
-}
-
 export interface Transaction {
   id: string;
   type: "buy" | "sell" | "payout" | "bonus" | "referral" | "daily" | "fee" | "deposit" | "withdraw" | "order_fill" | "order_cancel";

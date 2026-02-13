@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telegram Bot Message Preview — PredictRu</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0e1621;
+    color: #e4e6eb;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .header {
+    background: #17212b;
+    padding: 12px 20px;
+    border-bottom: 1px solid #2b3945;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .header h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e4e6eb;
+  }
+
+  .header .badge {
+    font-size: 11px;
+    background: #2b5278;
+    color: #6ab2f2;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Left panel — editor */
+  .editor-panel {
+    width: 50%;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-right: 1px solid #2b3945;
+    overflow-y: auto;
+  }
+
+  .editor-panel label {
+    font-size: 13px;
+    color: #8b9bab;
+    font-weight: 500;
+  }
+
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .preset-btn {
+    font-size: 12px;
+    padding: 5px 10px;
+    border: 1px solid #2b3945;
+    border-radius: 8px;
+    background: #17212b;
+    color: #6ab2f2;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .preset-btn:hover { background: #1e2c3a; }
+  .preset-btn.active { background: #2b5278; border-color: #6ab2f2; }
+
+  textarea {
+    flex: 1;
+    min-height: 200px;
+    background: #0e1621;
+    color: #e4e6eb;
+    border: 1px solid #2b3945;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+  }
+
+  textarea:focus { border-color: #6ab2f2; }
+
+  /* Right panel — preview */
+  .preview-panel {
+    width: 50%;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    background: #0e1621;
+  }
+
+  .chat-bg {
+    flex: 1;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect fill="%230e1621" width="40" height="40"/><circle fill="%23172130" cx="20" cy="20" r="1"/></svg>');
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .message-bubble {
+    max-width: 85%;
+    background: #182533;
+    border-radius: 12px 12px 12px 4px;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #e4e6eb;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
+
+  .message-bubble b, .message-bubble strong { color: #fff; font-weight: 600; }
+  .message-bubble i, .message-bubble em { color: #8b9bab; }
+  .message-bubble code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: #0e1621;
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: #6ab2f2;
+  }
+  .message-bubble pre {
+    background: #0e1621;
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin: 4px 0;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #6ab2f2;
+  }
+  .message-bubble a { color: #6ab2f2; text-decoration: none; }
+
+  .keyboard-row {
+    display: flex;
+    gap: 4px;
+    max-width: 85%;
+  }
+
+  .kb-button {
+    flex: 1;
+    background: #2b5278;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #e4e6eb;
+    font-size: 13px;
+    text-align: center;
+    cursor: default;
+  }
+
+  .meta {
+    font-size: 11px;
+    color: #5c6f80;
+    padding: 4px 0;
+  }
+
+  .char-count {
+    font-size: 11px;
+    color: #5c6f80;
+    text-align: right;
+  }
+
+  .char-count.warn { color: #e0a030; }
+  .char-count.error { color: #e05050; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>PredictRu Bot Preview</h1>
+  <span class="badge">Telegram HTML</span>
+</div>
+
+<div class="container">
+  <div class="editor-panel">
+    <label>Шаблоны</label>
+    <div class="presets" id="presets"></div>
+
+    <label>HTML-разметка</label>
+    <textarea id="editor" spellcheck="false"></textarea>
+
+    <label>Inline-клавиатура (JSON, необязательно)</label>
+    <textarea id="kb-editor" style="min-height:60px;max-height:100px" spellcheck="false">[]</textarea>
+
+    <div class="char-count" id="char-count">0 символов</div>
+  </div>
+
+  <div class="preview-panel">
+    <label>Превью</label>
+    <div class="chat-bg">
+      <div class="message-bubble" id="preview"></div>
+      <div id="kb-preview"></div>
+      <div class="meta" id="meta">PredictRu Bot</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PRESETS = {
+  "welcome": {
+    label: "👋 /start",
+    html: `Привет, <b>Иван</b>! 👋\n\n📊 <b>ПредскажиРу</b> — рынок предсказаний нового поколения\n\nЗдесь ты можешь:\n  • Торговать прогнозами на реальные события\n  • Зарабатывать PRC-токены на точных предсказаниях\n  • Соревноваться с другими трейдерами\n\n🎯 <b>Политика • Спорт • Крипто • Экономика</b>\n\n👇 Нажми кнопку ниже, чтобы начать:`,
+    kb: [["🚀 Открыть приложение"],["🌐 Веб-версия"],["💰 Мой баланс"]]
+  },
+  "login_success": {
+    label: "✅ Логин",
+    html: `✅ <b>Авторизация прошла успешно!</b>\n\nВернитесь на вкладку браузера — вход произойдёт автоматически.`,
+    kb: []
+  },
+  "login_used": {
+    label: "⚠️ Токен",
+    html: `⚠️ Этот токен уже использован.`,
+    kb: []
+  },
+  "login_expired": {
+    label: "❌ Токен",
+    html: `❌ Токен истёк. Обновите страницу сайта и попробуйте снова.`,
+    kb: []
+  },
+  "profile": {
+    label: "💰 Профиль",
+    html: `💰 <b>Твой профиль</b>\n\n💳 Баланс: <b>1,250.00 PRC</b>\n📈 Сделок: <b>42</b>\n🔥 Винрейт: <b>68%</b>\n\n💡 <i>Торгуй точнее — зарабатывай больше!</i>`,
+    kb: [["💼 Мой портфель"],["🏠 На главную"]]
+  },
+  "not_found": {
+    label: "😶 Не найден",
+    html: `😶 Аккаунт не найден.\n\nОткрой приложение, чтобы зарегистрироваться 👇`,
+    kb: [["💼 Мой портфель"],["🏠 На главную"]]
+  },
+  "resolution_win": {
+    label: "🎉 Победа",
+    html: `🎉 <b>Твой прогноз сбылся!</b>\n\n📌 Биткоин выше $100K к концу 2025?\n🎯 Исход: <b>ДА</b>\n💰 Выплата: <b>+150.00 PRC</b>\n\n🔥 Так держать!`,
+    kb: [["📈 Посмотреть рынок"],["❌ Закрыть"]]
+  },
+  "resolution_lose": {
+    label: "📢 Проигрыш",
+    html: `📢 <b>Рынок закрыт</b>\n\n📌 Биткоин выше $100K к концу 2025?\n🎯 Исход: <b>ДА</b>\n\n💪 В следующий раз повезёт!`,
+    kb: [["📈 Посмотреть рынок"],["❌ Закрыть"]]
+  },
+  "daily_digest": {
+    label: "🌞 Дайджест",
+    html: `🌞 <b>Доброе утро!</b>\n\n🔥 <b>Горячие рынки сегодня:</b>\n\n  <b>1.</b> Курс рубля ниже 100 к июлю?\n     📊 Да: <b>35%</b> • Объём: <b>12,500 PRC</b>\n\n  <b>2.</b> SpaceX запуск Starship в марте?\n     📊 Да: <b>72%</b> • Объём: <b>8,300 PRC</b>\n\n  <b>3.</b> ЦБ снизит ставку в апреле?\n     📊 Да: <b>18%</b> • Объём: <b>6,100 PRC</b>\n\n👇 Открой приложение и торгуй!`,
+    kb: [["🚀 Открыть приложение"]]
+  },
+  "trade_confirm": {
+    label: "✅ Сделка",
+    html: `✅ <b>Сделка подтверждена!</b>\n\n📌 Биткоин выше $100K к концу 2025?\n🎯 Сторона: <b>ДА</b>\n📊 Акций: <b>10.00</b>\n💳 Стоимость: <b>7.20 PRC</b>`,
+    kb: []
+  },
+  "unavailable": {
+    label: "⚠️ Ошибка",
+    html: `⚠️ Сервис временно недоступен. Попробуй позже.`,
+    kb: []
+  }
+};
+
+const editor = document.getElementById('editor');
+const kbEditor = document.getElementById('kb-editor');
+const preview = document.getElementById('preview');
+const kbPreview = document.getElementById('kb-preview');
+const charCount = document.getElementById('char-count');
+const presetsDiv = document.getElementById('presets');
+
+// Render presets
+let activePreset = null;
+Object.entries(PRESETS).forEach(([key, p]) => {
+  const btn = document.createElement('button');
+  btn.className = 'preset-btn';
+  btn.textContent = p.label;
+  btn.onclick = () => {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activePreset = key;
+    editor.value = p.html;
+    kbEditor.value = JSON.stringify(p.kb, null, 2);
+    render();
+  };
+  presetsDiv.appendChild(btn);
+});
+
+function renderTelegramHtml(raw) {
+  // Allowed Telegram tags: b, strong, i, em, u, ins, s, strike, del, code, pre, a
+  // First escape everything, then re-allow known tags
+  let text = raw;
+
+  // Convert newlines to <br>
+  text = text.replace(/\n/g, '<br>');
+
+  return text;
+}
+
+function render() {
+  const raw = editor.value;
+  preview.innerHTML = renderTelegramHtml(raw);
+
+  // Character count
+  const plain = raw.replace(/<[^>]+>/g, '').length;
+  charCount.textContent = `${plain} символов`;
+  charCount.className = 'char-count' + (plain > 4096 ? ' error' : plain > 3500 ? ' warn' : '');
+
+  // Keyboard
+  try {
+    const kb = JSON.parse(kbEditor.value);
+    kbPreview.innerHTML = '';
+    if (Array.isArray(kb)) {
+      kb.forEach(row => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'keyboard-row';
+        const buttons = Array.isArray(row) ? row : [row];
+        buttons.forEach(label => {
+          const btn = document.createElement('div');
+          btn.className = 'kb-button';
+          btn.textContent = typeof label === 'string' ? label : label.text || '';
+          rowDiv.appendChild(btn);
+        });
+        kbPreview.appendChild(rowDiv);
+      });
+    }
+  } catch {
+    // ignore invalid JSON
+  }
+}
+
+editor.addEventListener('input', render);
+kbEditor.addEventListener('input', render);
+
+// Load first preset
+const firstKey = Object.keys(PRESETS)[0];
+document.querySelector('.preset-btn').click();
+</script>
+
+</body>
+</html>

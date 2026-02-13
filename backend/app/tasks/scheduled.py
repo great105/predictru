@@ -80,7 +80,10 @@ async def close_expired_markets() -> None:
 @broker.task(schedule=[{"cron": "0 6 * * *"}])
 async def send_daily_digests() -> None:
     """Send daily digest notifications at 09:00 MSK (06:00 UTC)."""
+    import html as html_mod
+
     from aiogram import Bot
+    from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
     async with async_session() as db:
         # Get hot markets
@@ -101,18 +104,39 @@ async def send_daily_digests() -> None:
 
     bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
     try:
-        market_lines = []
-        for m in hot_markets:
-            market_lines.append(f"  {m.title}")
+        lines = [
+            "🌞 <b>Доброе утро!</b>\n",
+            "🔥 <b>Горячие рынки сегодня:</b>\n",
+        ]
+        for i, m in enumerate(hot_markets, 1):
+            safe_title = html_mod.escape(m.title)
+            volume = float(m.total_volume) if m.total_volume else 0
+            lines.append(
+                f"  <b>{i}.</b> {safe_title}\n"
+                f"     📊 Объём: <b>{volume:,.0f} PRC</b>\n"
+            )
+        lines.append("\n👇 Открой приложение и торгуй!")
+        text = "\n".join(lines)
 
-        text = "Good morning! Here are today's hot markets:\n\n" + "\n".join(
-            market_lines
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="🚀 Открыть приложение",
+                        callback_data="open_market:home",
+                    )
+                ]
+            ]
         )
 
         sent = 0
         for user in users:
             try:
-                await bot.send_message(user.telegram_id, text)
+                await bot.send_message(
+                    user.telegram_id, text,
+                    reply_markup=keyboard,
+                    parse_mode="HTML",
+                )
                 sent += 1
             except Exception:
                 pass
