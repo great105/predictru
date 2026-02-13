@@ -76,7 +76,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         color: "var(--tg-theme-text-color, #000000)",
       }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 8 }}>PredictRu</h1>
+          <h1 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 8 }}>Предскажи</h1>
           <p style={{ color: "var(--tg-theme-hint-color, #999)" }}>
             {error || "Откройте приложение из Telegram"}
           </p>

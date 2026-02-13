@@ -3,8 +3,14 @@ import { useMarkets } from "@/hooks/useMarkets";
 import { MarketCard } from "@/components/MarketCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { MarketCardSkeleton } from "@/components/Skeleton";
+import { WelcomeScreen } from "@/components/WelcomeScreen";
+
+const ONBOARDING_KEY = "onboarding_done";
 
 export function HomePage() {
+  const [showWelcome, setShowWelcome] = useState(
+    () => !localStorage.getItem(ONBOARDING_KEY)
+  );
   const [category, setCategory] = useState("all");
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useMarkets(category === "all" ? undefined : category);
@@ -25,6 +31,17 @@ export function HomePage() {
   );
 
   const allMarkets = data?.pages.flatMap((p) => p.items) ?? [];
+
+  if (showWelcome) {
+    return (
+      <WelcomeScreen
+        onStart={() => {
+          localStorage.setItem(ONBOARDING_KEY, "1");
+          setShowWelcome(false);
+        }}
+      />
+    );
+  }
 
   return (
     <div>
