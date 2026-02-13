@@ -9,7 +9,8 @@ const STAKE_PRESETS = [25, 50, 100, 250];
 export function CreateBetPage() {
   const navigate = useNavigate();
   const { haptic, backButton } = useWebApp();
-  const balance = useAuthStore((s) => s.user?.balance ?? 0);
+  const rawBalance = useAuthStore((s) => s.user?.balance ?? 0);
+  const balance = Number(rawBalance);
   const createBet = useCreateBet();
 
   const [title, setTitle] = useState("");

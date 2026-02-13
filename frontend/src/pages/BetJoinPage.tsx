@@ -9,7 +9,8 @@ export function BetJoinPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
   const { haptic, backButton } = useWebApp();
-  const balance = useAuthStore((s) => s.user?.balance ?? 0);
+  const rawBalance = useAuthStore((s) => s.user?.balance ?? 0);
+  const balance = Number(rawBalance);
   const { data: bet, isLoading, isError } = useBetLookup(code ?? "");
   const joinBet = useJoinBet();
   const [outcome, setOutcome] = useState<"yes" | "no">("yes");
