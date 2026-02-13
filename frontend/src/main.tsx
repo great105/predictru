@@ -10,6 +10,13 @@ if (tg) {
   tg.expand();
   // Prevent swipe-to-close so scroll works properly
   (tg as any).disableVerticalSwipes?.();
+  // Force dark theme — override Telegram's light background
+  try {
+    (tg as any).setBackgroundColor?.("#0a0e1a");
+    (tg as any).setHeaderColor?.("#0a0e1a");
+  } catch {
+    /* older clients may not support these */
+  }
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
