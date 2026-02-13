@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useBetDetail, useCastVote } from "@/hooks/usePrivateBets";
+import { useBetDetail, useCastVote, useStartVoting } from "@/hooks/usePrivateBets";
 import { ShareInvite } from "@/components/ShareInvite";
 import { VotingPanel } from "@/components/VotingPanel";
 import { useWebApp } from "@/hooks/useWebApp";
@@ -16,9 +16,11 @@ const STATUS_MAP: Record<string, { text: string; color: string }> = {
 export function BetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { backButton } = useWebApp();
+  const { backButton, haptic } = useWebApp();
   const { data: bet, isLoading, isError } = useBetDetail(id ?? "");
   const vote = useCastVote(id ?? "");
+  const startVoting = useStartVoting(id ?? "");
+  const [startVotingError, setStartVotingError] = useState<string | null>(null);
 
   useEffect(() => {
     backButton?.show();
@@ -183,8 +185,62 @@ export function BetDetailPage() {
         </div>
       )}
 
+      {/* Start voting (creator only, when open and both sides have participants) */}
+      {bet.status === "open" && bet.is_creator && (
+        <div className="glass-card p-4 space-y-3">
+          <div className="text-sm font-medium">Управление спором</div>
+          {bet.yes_count > 0 && bet.no_count > 0 ? (
+            <>
+              <button
+                onClick={async () => {
+                  setStartVotingError(null);
+                  haptic?.impactOccurred("heavy");
+                  try {
+                    await startVoting.mutateAsync();
+                    haptic?.notificationOccurred("success");
+                  } catch (e: any) {
+                    setStartVotingError(
+                      e?.response?.data?.detail ?? "Ошибка"
+                    );
+                    haptic?.notificationOccurred("error");
+                  }
+                }}
+                disabled={startVoting.isPending}
+                className="w-full bg-amber-500/20 border border-amber-500/50 text-amber-400 py-3 rounded-xl text-sm font-bold transition-opacity disabled:opacity-40"
+              >
+                {startVoting.isPending
+                  ? "Запускаем..."
+                  : "Начать голосование"}
+              </button>
+              <div className="text-xs text-tg-hint text-center">
+                Все участники получат уведомление
+              </div>
+            </>
+          ) : (
+            <div className="text-xs text-tg-hint text-center">
+              Для начала голосования нужен хотя бы один участник на каждой стороне
+              (ДА: {bet.yes_count}, НЕТ: {bet.no_count})
+            </div>
+          )}
+          {startVotingError && (
+            <div className="text-red-400 text-sm text-center">{startVotingError}</div>
+          )}
+        </div>
+      )}
+
       {/* Share (only when open) */}
-      {bet.status === "open" && <ShareInvite inviteCode={bet.invite_code} title={bet.title} />}
+      {bet.status === "open" && (
+        <ShareInvite
+          inviteCode={bet.invite_code}
+          title={bet.title}
+          stakeAmount={bet.stake_amount}
+          totalPool={bet.total_pool}
+          yesCount={bet.yes_count}
+          noCount={bet.no_count}
+          closesAt={bet.closes_at}
+          creatorName={bet.creator_name}
+        />
+      )}
 
       {/* Timing */}
       <div className="text-center text-xs text-tg-hint space-y-1">

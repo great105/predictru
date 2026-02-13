@@ -127,5 +127,8 @@ export const betsApi = {
   vote: (id: string, data: { vote: string }) =>
     api.post<PrivateBetDetail>(`/bets/${id}/vote`, data),
 
+  startVoting: (id: string) =>
+    api.post<PrivateBetDetail>(`/bets/${id}/start-voting`),
+
   lookup: (code: string) => api.get<PrivateBet>(`/bets/lookup/${code}`),
 };

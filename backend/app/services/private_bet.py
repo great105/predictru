@@ -4,12 +4,14 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
+from aiogram import Bot
 from fastapi import HTTPException, status
 from redis.asyncio import Redis
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.config import settings
 from app.models.private_bet import PrivateBet, PrivateBetParticipant, PrivateBetStatus
 from app.models.transaction import Transaction, TransactionType
 from app.models.user import User
@@ -175,6 +177,76 @@ class PrivateBetService:
         await self.db.commit()
         await self.db.refresh(bet)
         return bet
+
+    async def start_voting(
+        self,
+        user_id: uuid.UUID,
+        bet_id: uuid.UUID,
+    ) -> PrivateBet:
+        """Creator manually triggers voting phase."""
+        bet = await self.db.get(PrivateBet, bet_id, with_for_update=True)
+        if bet is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Bet not found")
+        if bet.created_by != user_id:
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN, "Only the creator can start voting"
+            )
+        if bet.status != PrivateBetStatus.OPEN:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Bet is not open")
+
+        total = bet.yes_count + bet.no_count
+        if total < 2 or bet.yes_count == 0 or bet.no_count == 0:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "Need at least one participant on each side",
+            )
+
+        bet.status = PrivateBetStatus.VOTING
+        bet.voting_deadline = datetime.now(timezone.utc) + timedelta(hours=24)
+
+        await self.db.commit()
+        await self.db.refresh(bet)
+
+        # Notify participants in background
+        await self._notify_voting_started(bet)
+
+        return bet
+
+    async def _notify_voting_started(self, bet: PrivateBet) -> None:
+        """Send Telegram notification to all participants that voting has started."""
+        if not settings.TELEGRAM_BOT_TOKEN:
+            return
+        bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+        try:
+            result = await self.db.execute(
+                select(PrivateBetParticipant)
+                .where(PrivateBetParticipant.bet_id == bet.id)
+                .options(selectinload(PrivateBetParticipant.user))
+            )
+            participants = result.scalars().all()
+
+            text = (
+                f"🗳 <b>Голосование началось!</b>\n\n"
+                f"Спор: <i>{bet.title}</i>\n\n"
+                f"Откройте приложение и проголосуйте за реальный исход."
+            )
+
+            for p in participants:
+                if p.user and p.user.telegram_id:
+                    try:
+                        await bot.send_message(
+                            p.user.telegram_id,
+                            text,
+                            parse_mode="HTML",
+                        )
+                    except Exception:
+                        pass
+
+            logger.info(f"Voting notifications sent for bet {bet.id}")
+        except Exception as e:
+            logger.warning(f"Failed to send voting notifications: {e}")
+        finally:
+            await bot.session.close()
 
     async def cast_vote(
         self,

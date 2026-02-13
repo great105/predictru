@@ -73,6 +73,7 @@ def _bet_to_detail(bet, user_id: uuid.UUID) -> PrivateBetDetail:
         creator_name=bet.creator.first_name if bet.creator else "",
         my_outcome=my_outcome,
         my_vote=my_vote,
+        is_creator=bet.created_by == user_id,
         participants=participants,
     )
 
@@ -98,6 +99,16 @@ async def my_bets(user: CurrentUser, db: DbSession, redis: RedisConn):
     service = PrivateBetService(db, redis)
     bets = await service.get_my_bets(user.id)
     return [_bet_to_read(b) for b in bets]
+
+
+@router.get("/preview/{code}", response_model=PrivateBetRead)
+async def preview_bet(code: str, db: DbSession, redis: RedisConn):
+    """Public endpoint — no auth required. Used by bot for rich invite messages."""
+    service = PrivateBetService(db, redis)
+    bet = await service.lookup_bet(code)
+    if bet is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Bet not found")
+    return _bet_to_read(bet)
 
 
 @router.get("/lookup/{code}", response_model=PrivateBetRead)
@@ -133,6 +144,21 @@ async def join_bet(
         outcome=body.outcome,
     )
     return _bet_to_read(bet)
+
+
+@router.post("/{bet_id}/start-voting", response_model=PrivateBetDetail)
+async def start_voting(
+    bet_id: uuid.UUID,
+    user: CurrentUser,
+    db: DbSession,
+    redis: RedisConn,
+):
+    service = PrivateBetService(db, redis)
+    await service.start_voting(user_id=user.id, bet_id=bet_id)
+    detail = await service.get_bet_detail(bet_id, user.id)
+    if detail is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Bet not found")
+    return _bet_to_detail(detail, user.id)
 
 
 @router.post("/{bet_id}/vote", response_model=PrivateBetDetail)

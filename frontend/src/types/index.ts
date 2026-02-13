@@ -165,5 +165,6 @@ export interface PrivateBetDetail extends PrivateBet {
   resolved_at: string | null;
   my_outcome: string | null;
   my_vote: string | null;
+  is_creator: boolean;
   participants: BetParticipant[];
 }

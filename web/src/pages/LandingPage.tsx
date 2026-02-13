@@ -399,6 +399,144 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ═══ PRIVATE BETS (P2P) ═══ */}
+      <section className="relative py-24 sm:py-32">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[1px] bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+
+        {/* Warm accent glow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/3 left-1/4 w-[40vw] h-[40vw] rounded-full bg-amber-500/[0.03] blur-[100px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-[30vw] h-[30vw] rounded-full bg-brand/[0.04] blur-[80px]" />
+        </div>
+
+        <div className="container-site relative z-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={stagger}
+            className="text-center mb-16"
+          >
+            <motion.span variants={fadeUp} custom={0} className="text-amber-400 font-mono text-sm tracking-widest uppercase">
+              Новинка
+            </motion.span>
+            <motion.h2 variants={fadeUp} custom={1} className="font-display text-3xl sm:text-4xl md:text-5xl font-bold mt-3">
+              Споры с друзьями
+            </motion.h2>
+            <motion.p variants={fadeUp} custom={2} className="text-txt-secondary mt-4 max-w-2xl mx-auto text-lg font-body leading-relaxed">
+              Без букмекера. Без посредников. Вы спорите напрямую —
+              платформа берёт только <span className="text-amber-400 font-semibold">2% комиссии</span> с банка.
+            </motion.p>
+          </motion.div>
+
+          {/* Flow steps */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
+            {[
+              {
+                step: "01",
+                icon: "🎯",
+                title: "Создай спор",
+                desc: "Задай вопрос, установи ставку и выбери свою сторону — ДА или НЕТ.",
+              },
+              {
+                step: "02",
+                icon: "🔗",
+                title: "Пригласи друзей",
+                desc: "Отправь ссылку в Telegram. Присоединиться может сколько угодно человек.",
+              },
+              {
+                step: "03",
+                icon: "🗳",
+                title: "Проголосуйте",
+                desc: "После закрытия ставок участники голосуют за реальный исход события.",
+              },
+              {
+                step: "04",
+                icon: "💰",
+                title: "Победители забирают банк",
+                desc: "Те, кто угадал, делят банк между собой. Честно и прозрачно.",
+              },
+            ].map((s, i) => (
+              <motion.div
+                key={s.step}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-50px" }}
+                variants={fadeUp}
+                custom={i}
+                className="relative card p-6 border border-amber-500/10 hover:border-amber-500/25 transition-colors"
+              >
+                <div className="absolute -top-3 -right-3 w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center font-mono text-sm font-bold text-amber-400">
+                  {s.step}
+                </div>
+                <div className="text-3xl mb-4">{s.icon}</div>
+                <h3 className="font-display text-lg font-bold mb-2">{s.title}</h3>
+                <p className="text-txt-secondary text-sm leading-relaxed font-body">{s.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Highlights */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={stagger}
+            className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12"
+          >
+            {[
+              {
+                icon: "🤝",
+                title: "P2P — игрок против игрока",
+                desc: "Никаких букмекеров и алгоритмов. Вы спорите друг с другом напрямую.",
+              },
+              {
+                icon: "📊",
+                title: "Только 2% комиссии",
+                desc: "Платформа берёт минимальную комиссию с банка. Остальное — ваше.",
+              },
+              {
+                icon: "♾️",
+                title: "Без лимитов участников",
+                desc: "Зови хоть двоих, хоть сотню друзей. Чем больше — тем интереснее.",
+              },
+            ].map((h, i) => (
+              <motion.div
+                key={h.title}
+                variants={fadeUp}
+                custom={i}
+                className="card p-6 text-center"
+              >
+                <div className="text-4xl mb-3">{h.icon}</div>
+                <h3 className="font-display font-bold text-base mb-1">{h.title}</h3>
+                <p className="text-txt-secondary text-sm font-body">{h.desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            custom={0}
+            className="text-center"
+          >
+            <a
+              href={TELEGRAM_BOT}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-display font-bold text-lg bg-amber-500/15 text-amber-400 border border-amber-500/25 hover:bg-amber-500/25 hover:border-amber-500/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Создать спор в Telegram
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ═══ EXAMPLE TRADE ═══ */}
       <section className="relative py-24 sm:py-32">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-[1px] bg-gradient-to-r from-transparent via-line-light to-transparent" />

@@ -58,4 +58,5 @@ class PrivateBetDetail(PrivateBetRead):
     resolved_at: datetime | None = None
     my_outcome: str | None = None
     my_vote: str | None = None
+    is_creator: bool = False
     participants: list[ParticipantRead] = []

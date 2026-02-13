@@ -77,6 +77,21 @@ export function useJoinBet() {
   });
 }
 
+export function useStartVoting(betId: string) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await betsApi.startVoting(betId);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["private-bet", betId] });
+      qc.invalidateQueries({ queryKey: ["private-bets"] });
+    },
+  });
+}
+
 export function useCastVote(betId: string) {
   const qc = useQueryClient();
   const updateBalance = useAuthStore((s) => s.updateBalance);
