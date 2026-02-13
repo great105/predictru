@@ -155,6 +155,32 @@ export function QuickPredict({ market }: QuickPredictProps) {
                     ))}
                   </div>
 
+                  {/* Estimated payout */}
+                  {(() => {
+                    const price = outcome === "yes" ? market.price_yes : market.price_no;
+                    const qty = isClob
+                      ? Math.floor(amount / Math.max(price, 0.01))
+                      : Math.round(amount / Math.max(price, 0.01));
+                    const payout = qty;
+                    const profit = payout - amount;
+                    return (
+                      <div className="glass-card p-3 mb-4 space-y-1.5">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-tg-hint">Цена за акцию</span>
+                          <span className="text-tg-text font-medium">{price.toFixed(2)} PRC</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-tg-hint">Получите акций</span>
+                          <span className="text-tg-text font-medium">~{qty}</span>
+                        </div>
+                        <div className="border-t border-white/10 pt-1.5 flex justify-between text-sm">
+                          <span className="text-tg-hint font-medium">Выигрыш если угадал</span>
+                          <span className="text-green-400 font-bold">+{formatPRC(profit)} PRC</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {error && (
                     <div className="bg-red-500/10 text-red-400 text-xs font-medium rounded-lg px-3 py-2 mb-3">
                       {error}
