@@ -30,6 +30,7 @@ def _bet_to_read(bet) -> PrivateBetRead:
         total_pool=bet.total_pool,
         created_at=bet.created_at,
         creator_name=bet.creator.first_name if bet.creator else "",
+        resolution_outcome=bet.resolution_outcome,
     )
 
 

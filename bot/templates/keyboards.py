@@ -107,3 +107,16 @@ class Kb:
                 ]
             ]
         )
+
+    @staticmethod
+    def open_market_with_text(webapp_url: str, text: str) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text=text,
+                        web_app=WebAppInfo(url=webapp_url),
+                    )
+                ]
+            ]
+        )

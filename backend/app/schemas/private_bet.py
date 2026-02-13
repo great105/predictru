@@ -46,6 +46,7 @@ class PrivateBetRead(BaseModel):
     total_pool: Decimal
     created_at: datetime
     creator_name: str
+    resolution_outcome: str | None = None
 
     model_config = {"from_attributes": True}
 

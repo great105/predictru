@@ -38,6 +38,8 @@ async def cmd_start(message: Message):
         if bet_info:
             from datetime import datetime
 
+            status = bet_info.get("status", "open")
+            title = bet_info.get("title", "Спор")
             total = bet_info.get("yes_count", 0) + bet_info.get("no_count", 0)
             closes = bet_info.get("closes_at", "")
             closes_str = ""
@@ -47,28 +49,60 @@ async def cmd_start(message: Message):
             except Exception:
                 closes_str = closes[:16] if closes else ""
 
-            text = (
-                f"🤝 <b>Вас пригласили в спор!</b>\n\n"
-                f"📌 <b>{bet_info.get('title', 'Спор')}</b>\n\n"
-                f"💰 Ставка: <b>{bet_info.get('stake_amount', '?')} PRC</b>\n"
-                f"🏦 Банк: <b>{bet_info.get('total_pool', '?')} PRC</b>\n"
-                f"👥 Участников: <b>{total}</b> "
-                f"(✅ ДА: {bet_info.get('yes_count', 0)} / "
-                f"❌ НЕТ: {bet_info.get('no_count', 0)})\n"
-                f"⏰ Приём ставок до: <b>{closes_str}</b>\n"
-                f"👤 Создал: {bet_info.get('creator_name', '?')}\n\n"
-                f"Выбери сторону и испытай удачу! 🔥"
-            )
+            if status == "open":
+                text = (
+                    f"🤝 <b>Вас пригласили в спор!</b>\n\n"
+                    f"📌 <b>{title}</b>\n\n"
+                    f"💰 Ставка: <b>{bet_info.get('stake_amount', '?')} PRC</b>\n"
+                    f"🏦 Банк: <b>{bet_info.get('total_pool', '?')} PRC</b>\n"
+                    f"👥 Участников: <b>{total}</b> "
+                    f"(✅ ДА: {bet_info.get('yes_count', 0)} / "
+                    f"❌ НЕТ: {bet_info.get('no_count', 0)})\n"
+                    f"⏰ Приём ставок до: <b>{closes_str}</b>\n"
+                    f"👤 Создал: {bet_info.get('creator_name', '?')}\n\n"
+                    f"Выбери сторону и испытай удачу! 🔥"
+                )
+                btn_text = "▶️ Присоединиться"
+            elif status == "voting":
+                text = (
+                    f"🗳 <b>Спор на стадии голосования</b>\n\n"
+                    f"📌 <b>{title}</b>\n\n"
+                    f"👥 Участников: <b>{total}</b>\n"
+                    f"🏦 Банк: <b>{bet_info.get('total_pool', '?')} PRC</b>\n\n"
+                    f"Приём ставок завершён. Участники голосуют за реальный исход."
+                )
+                btn_text = "🗳 Посмотреть"
+            elif status == "resolved":
+                outcome = bet_info.get("resolution_outcome")
+                outcome_text = "ДА ✅" if outcome == "yes" else "НЕТ ❌"
+                text = (
+                    f"🏁 <b>Спор завершён!</b>\n\n"
+                    f"📌 <b>{title}</b>\n\n"
+                    f"Результат: <b>{outcome_text}</b>\n"
+                    f"👥 Участников: <b>{total}</b>\n"
+                    f"🏦 Банк: <b>{bet_info.get('total_pool', '?')} PRC</b>"
+                )
+                btn_text = "📊 Результаты"
+            else:  # cancelled
+                text = (
+                    f"🚫 <b>Спор отменён</b>\n\n"
+                    f"📌 <b>{title}</b>\n\n"
+                    f"Ставки возвращены участникам."
+                )
+                btn_text = "📋 Подробнее"
+
+            keyboard = Kb.open_market_with_text(webapp_url, btn_text)
         else:
             text = (
                 "🤝 <b>Вас пригласили в спор!</b>\n\n"
                 f"Код: <code>{bet_code}</code>\n\n"
-                "Нажмите кнопку ниже, чтобы присоединиться:"
+                "Нажмите кнопку ниже, чтобы открыть:"
             )
+            keyboard = Kb.open_market(webapp_url)
 
         await message.answer(
             text,
-            reply_markup=Kb.open_market(webapp_url),
+            reply_markup=keyboard,
             parse_mode="HTML",
         )
         return
