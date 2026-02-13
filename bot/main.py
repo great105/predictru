@@ -1,4 +1,5 @@
 import logging
+import time
 
 from aiohttp import web
 from aiogram import Bot, Dispatcher
@@ -40,10 +41,11 @@ async def on_startup(app: web.Application):
     )
 
     try:
+        cache_bust = int(time.time())
         await bot.set_chat_menu_button(
             menu_button=MenuButtonWebApp(
-                text=f"{E.CRYSTAL} ПредскажиРу",
-                web_app=WebAppInfo(url=settings.WEBAPP_URL),
+                text=f"{E.CRYSTAL} Предскажи",
+                web_app=WebAppInfo(url=f"{settings.WEBAPP_URL}?v={cache_bust}"),
             )
         )
     except Exception as e:
