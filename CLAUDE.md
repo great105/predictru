@@ -266,3 +266,4 @@ Production server accessible via SSH: `ssh root@195.26.225.39`. Project at `/opt
 - **Telegram Login Widget**: Asks users for phone number — not suitable for one-click login. Use bot-based deep link auth instead (`https://t.me/bot?start=login_TOKEN`)
 - **nginx/html/ is stale**: The `nginx/html/` directory contains a legacy pre-built Mini App. Production builds from `frontend/` source via Docker multi-stage build. Don't update `nginx/html/` manually
 - **Web admin API**: Use separate `web/src/adminApi.ts` for admin endpoints instead of modifying `api.ts`
+- **Post-push deploy check**: After `git push` to `main`, always verify the deployment succeeded — check GitHub Actions CI/CD status (`gh run list --limit 1`) and confirm the production site is live (`curl -s https://xn--80ahcgkj6ail.xn--p1ai/health`)
