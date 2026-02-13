@@ -130,3 +130,40 @@ export interface PlaceOrderResult {
   remaining: number;
   fills_count: number;
 }
+
+// --- Private Bets types ---
+
+export interface PrivateBet {
+  id: string;
+  title: string;
+  stake_amount: number;
+  invite_code: string;
+  status: "open" | "voting" | "resolved" | "cancelled";
+  closes_at: string;
+  voting_deadline: string;
+  yes_count: number;
+  no_count: number;
+  total_pool: number;
+  created_at: string;
+  creator_name: string;
+}
+
+export interface BetParticipant {
+  user_id: string;
+  first_name: string;
+  username: string | null;
+  outcome: string;
+  vote: string | null;
+  payout: number;
+}
+
+export interface PrivateBetDetail extends PrivateBet {
+  description: string;
+  yes_votes: number;
+  no_votes: number;
+  resolution_outcome: string | null;
+  resolved_at: string | null;
+  my_outcome: string | null;
+  my_vote: string | null;
+  participants: BetParticipant[];
+}

@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from sqlalchemy import select
 
@@ -8,6 +9,8 @@ from app.core.config import settings
 from app.core.database import async_session
 from app.core.redis import get_redis
 from app.models.market import Market, MarketStatus
+from app.models.private_bet import PrivateBet, PrivateBetParticipant, PrivateBetStatus
+from app.models.transaction import Transaction, TransactionType
 from app.models.user import User
 from app.tasks.broker import broker
 
@@ -146,3 +149,137 @@ async def send_daily_digests() -> None:
         logger.info(f"Daily digest sent to {sent}/{len(users)} users")
     finally:
         await bot.session.close()
+
+
+FEE_RATE = Decimal("0.02")
+
+
+@broker.task(schedule=[{"cron": "* * * * *"}])
+async def close_expired_private_bets() -> None:
+    """Move OPEN private bets past closes_at to VOTING (or CANCEL if one-sided)."""
+    now = datetime.now(timezone.utc)
+    async with async_session() as db:
+        result = await db.execute(
+            select(PrivateBet)
+            .where(
+                PrivateBet.status == PrivateBetStatus.OPEN,
+                PrivateBet.closes_at <= now,
+            )
+            .with_for_update()
+        )
+        bets = result.scalars().all()
+
+        for bet in bets:
+            total = bet.yes_count + bet.no_count
+            # Cancel if nobody joined, or only one side has participants
+            if total <= 1 or bet.yes_count == 0 or bet.no_count == 0:
+                bet.status = PrivateBetStatus.CANCELLED
+                bet.resolved_at = now
+                # Refund all
+                p_result = await db.execute(
+                    select(PrivateBetParticipant).where(
+                        PrivateBetParticipant.bet_id == bet.id
+                    )
+                )
+                for p in p_result.scalars().all():
+                    p.payout = bet.stake_amount
+                    user = await db.get(User, p.user_id, with_for_update=True)
+                    if user:
+                        user.balance += bet.stake_amount
+                        db.add(
+                            Transaction(
+                                user_id=p.user_id,
+                                type=TransactionType.BET_REFUND,
+                                amount=bet.stake_amount,
+                                description=f"Возврат ставки: {bet.title[:80]}",
+                            )
+                        )
+                logger.info(f"Private bet cancelled (one-sided): {bet.id}")
+            else:
+                bet.status = PrivateBetStatus.VOTING
+                logger.info(f"Private bet moved to voting: {bet.id}")
+
+        if bets:
+            await db.commit()
+
+
+@broker.task(schedule=[{"cron": "*/5 * * * *"}])
+async def resolve_expired_voting() -> None:
+    """Resolve VOTING private bets past voting_deadline by majority vote."""
+    now = datetime.now(timezone.utc)
+    async with async_session() as db:
+        result = await db.execute(
+            select(PrivateBet)
+            .where(
+                PrivateBet.status == PrivateBetStatus.VOTING,
+                PrivateBet.voting_deadline <= now,
+            )
+            .with_for_update()
+        )
+        bets = result.scalars().all()
+
+        for bet in bets:
+            total_votes = bet.yes_votes + bet.no_votes
+            if total_votes == 0 or bet.yes_votes == bet.no_votes:
+                # No votes or tie → cancel and refund
+                bet.status = PrivateBetStatus.CANCELLED
+                bet.resolved_at = now
+                p_result = await db.execute(
+                    select(PrivateBetParticipant).where(
+                        PrivateBetParticipant.bet_id == bet.id
+                    )
+                )
+                for p in p_result.scalars().all():
+                    p.payout = bet.stake_amount
+                    user = await db.get(User, p.user_id, with_for_update=True)
+                    if user:
+                        user.balance += bet.stake_amount
+                        db.add(
+                            Transaction(
+                                user_id=p.user_id,
+                                type=TransactionType.BET_REFUND,
+                                amount=bet.stake_amount,
+                                description=f"Возврат ставки: {bet.title[:80]}",
+                            )
+                        )
+                logger.info(f"Private bet cancelled (tie/no votes): {bet.id}")
+            else:
+                # Majority wins
+                winning = "yes" if bet.yes_votes > bet.no_votes else "no"
+                bet.status = PrivateBetStatus.RESOLVED
+                bet.resolution_outcome = winning
+                bet.resolved_at = now
+
+                total_pool = bet.total_pool
+                fee = (total_pool * FEE_RATE).quantize(Decimal("0.01"))
+                payout_pool = total_pool - fee
+
+                w_result = await db.execute(
+                    select(PrivateBetParticipant).where(
+                        PrivateBetParticipant.bet_id == bet.id,
+                        PrivateBetParticipant.outcome == winning,
+                    )
+                )
+                winners = w_result.scalars().all()
+                if winners:
+                    per_winner = (payout_pool / len(winners)).quantize(Decimal("0.01"))
+                    for w in winners:
+                        w.payout = per_winner
+                        user = await db.get(User, w.user_id, with_for_update=True)
+                        if user:
+                            user.balance += per_winner
+                            db.add(
+                                Transaction(
+                                    user_id=w.user_id,
+                                    type=TransactionType.BET_PAYOUT,
+                                    amount=per_winner,
+                                    description=f"Выигрыш в споре: {bet.title[:80]}",
+                                )
+                            )
+
+                logger.info(
+                    f"Private bet resolved by deadline: {bet.id}, outcome={winning}"
+                )
+
+        if bets:
+            await db.commit()

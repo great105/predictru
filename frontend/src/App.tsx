@@ -6,7 +6,10 @@ import { Layout } from "@/components/Layout";
 import { HomePage } from "@/pages/HomePage";
 import { MarketPage } from "@/pages/MarketPage";
 import { PortfolioPage } from "@/pages/PortfolioPage";
-
+import { BetsPage } from "@/pages/BetsPage";
+import { CreateBetPage } from "@/pages/CreateBetPage";
+import { BetDetailPage } from "@/pages/BetDetailPage";
+import { BetJoinPage } from "@/pages/BetJoinPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ProposePage } from "@/pages/ProposePage";
 import { AdminPage } from "@/pages/AdminPage";
@@ -101,10 +104,13 @@ export function App() {
               <Route element={<Layout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/portfolio" element={<PortfolioPage />} />
-
+                <Route path="/bets" element={<BetsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>
               <Route path="/market/:id" element={<MarketPage />} />
+              <Route path="/bet/create" element={<CreateBetPage />} />
+              <Route path="/bet/join/:code" element={<BetJoinPage />} />
+              <Route path="/bet/:id" element={<BetDetailPage />} />
               <Route path="/propose" element={<ProposePage />} />
               <Route path="/admin" element={<AdminPage />} />
             </Routes>

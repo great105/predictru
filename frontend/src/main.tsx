@@ -17,6 +17,15 @@ if (tg) {
   } catch {
     /* older clients may not support these */
   }
+
+  // Deep link: bet_XXXXXX → redirect to join page
+  const startParam = (tg.initDataUnsafe as any)?.start_param as string | undefined;
+  if (startParam?.startsWith("bet_")) {
+    const betCode = startParam.slice(4);
+    if (betCode.length >= 4) {
+      window.history.replaceState(null, "", `/bet/join/${betCode}`);
+    }
+  }
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

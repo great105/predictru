@@ -13,6 +13,7 @@ from app.api import (
     comments,
     markets,
     orderbook,
+    private_bets,
     trade,
     ugc,
     users,
@@ -62,6 +63,7 @@ app.include_router(ugc.router, prefix="/v1")
 app.include_router(comments.router, prefix="/v1")
 app.include_router(orderbook.router, prefix="/v1")
 app.include_router(b2b.router, prefix="/v1")
+app.include_router(private_bets.router, prefix="/v1")
 
 
 @app.get("/v1/health")

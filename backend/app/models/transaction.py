@@ -21,6 +21,9 @@ class TransactionType(str, enum.Enum):
     WITHDRAW = "withdraw"
     ORDER_FILL = "order_fill"
     ORDER_CANCEL = "order_cancel"
+    BET_STAKE = "bet_stake"
+    BET_PAYOUT = "bet_payout"
+    BET_REFUND = "bet_refund"
 
 
 class Transaction(UUIDMixin, TimestampMixin, Base):

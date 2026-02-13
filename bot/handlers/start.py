@@ -15,6 +15,19 @@ router = Router()
 async def cmd_start(message: Message):
     args = message.text.split(maxsplit=1)
 
+    # ── Private bet deep link: bet_XXXXXX ──
+    if len(args) > 1 and args[1].startswith("bet_"):
+        bet_code = args[1][4:]
+        webapp_url = f"{settings.WEBAPP_URL}?startapp=bet_{bet_code}"
+        await message.answer(
+            "🤝 <b>Вас пригласили в спор!</b>\n\n"
+            f"Код: <code>{bet_code}</code>\n\n"
+            "Нажмите кнопку ниже, чтобы присоединиться:",
+            reply_markup=Kb.open_market(webapp_url),
+            parse_mode="HTML",
+        )
+        return
+
     # ── Bot-based web login deep link ──
     if len(args) > 1 and args[1].startswith("login_"):
         login_token = args[1][6:]

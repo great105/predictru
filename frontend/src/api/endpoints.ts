@@ -7,6 +7,8 @@ import type {
   PlaceOrderResult,
   Position,
   PricePoint,
+  PrivateBet,
+  PrivateBetDetail,
   TradeFillRecord,
   TradeResult,
   Transaction,
@@ -104,4 +106,26 @@ export const orderbookApi = {
 
   getMyOrders: (params?: { market_id?: string; active_only?: boolean }) =>
     api.get<UserOrder[]>("/orderbook/orders/my", { params }),
+};
+
+export const betsApi = {
+  create: (data: {
+    title: string;
+    description?: string;
+    stake_amount: number;
+    closes_at: string;
+    outcome: string;
+  }) => api.post<PrivateBet>("/bets", data),
+
+  my: () => api.get<PrivateBet[]>("/bets/my"),
+
+  get: (id: string) => api.get<PrivateBetDetail>(`/bets/${id}`),
+
+  join: (data: { invite_code: string; outcome: string }) =>
+    api.post<PrivateBet>("/bets/join", data),
+
+  vote: (id: string, data: { vote: string }) =>
+    api.post<PrivateBetDetail>(`/bets/${id}/vote`, data),
+
+  lookup: (code: string) => api.get<PrivateBet>(`/bets/lookup/${code}`),
 };
