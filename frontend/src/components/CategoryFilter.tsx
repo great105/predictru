@@ -1,4 +1,5 @@
 import { categoryIcon } from "@/utils/format";
+import { useWebApp } from "@/hooks/useWebApp";
 
 const CATEGORIES = [
   { key: "all", label: "Все" },
@@ -18,12 +19,17 @@ interface CategoryFilterProps {
 }
 
 export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
+  const { haptic } = useWebApp();
+
   return (
     <div className="flex flex-wrap gap-1.5 px-3 py-2">
       {CATEGORIES.map(({ key, label }) => (
         <button
           key={key}
-          onClick={() => onSelect(key)}
+          onClick={() => {
+            onSelect(key);
+            haptic?.selectionChanged();
+          }}
           className={`px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
             selected === key
               ? "bg-tg-button text-tg-button-text"

@@ -37,10 +37,10 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  open: "bg-green-100 text-green-700",
-  trading_closed: "bg-yellow-100 text-yellow-700",
-  resolved: "bg-blue-100 text-blue-700",
-  cancelled: "bg-red-100 text-red-700",
+  open: "bg-green-500/10 text-green-400",
+  trading_closed: "bg-yellow-500/10 text-yellow-400",
+  resolved: "bg-blue-500/10 text-blue-400",
+  cancelled: "bg-red-500/10 text-red-400",
 };
 
 const CATEGORIES = [
@@ -178,12 +178,12 @@ function MarketCard({ market, onAction, onDuplicate }: {
   const isOpen = market.status === "open";
 
   return (
-    <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+    <div className="glass-card p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium leading-tight">{market.title}</div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[market.status] ?? "bg-gray-100 text-gray-700"}`}>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_COLORS[market.status] ?? "bg-white/10 text-tg-hint"}`}>
               {STATUS_LABELS[market.status] ?? market.status}
             </span>
             <span className="text-xs text-tg-hint">
@@ -193,7 +193,7 @@ function MarketCard({ market, onAction, onDuplicate }: {
               {market.amm_type.toUpperCase()}
             </span>
             {market.is_featured && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">Featured</span>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400">Featured</span>
             )}
           </div>
         </div>
@@ -213,7 +213,7 @@ function MarketCard({ market, onAction, onDuplicate }: {
             className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
               confirm === "resolve_yes"
                 ? "bg-green-600 text-white"
-                : "bg-green-100 text-green-700"
+                : "bg-green-500/10 text-green-400"
             }`}
           >
             {confirm === "resolve_yes" ? "Точно YES?" : "YES"}
@@ -223,7 +223,7 @@ function MarketCard({ market, onAction, onDuplicate }: {
             className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
               confirm === "resolve_no"
                 ? "bg-red-600 text-white"
-                : "bg-red-100 text-red-700"
+                : "bg-red-500/10 text-red-400"
             }`}
           >
             {confirm === "resolve_no" ? "Точно NO?" : "NO"}
@@ -233,7 +233,7 @@ function MarketCard({ market, onAction, onDuplicate }: {
             className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
               confirm === "cancel"
                 ? "bg-gray-600 text-white"
-                : "bg-gray-100 text-gray-700"
+                : "bg-white/10 text-tg-hint"
             }`}
           >
             {confirm === "cancel" ? "Точно отменить?" : "Отменить"}
@@ -282,7 +282,7 @@ function CreateMarketForm({ onSuccess, prefill }: { onSuccess: () => void; prefi
     return (
       <div className="space-y-3">
         {/* Templates */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+        <div className="glass-card p-4">
           <p className="text-xs text-tg-hint mb-2">Быстрые шаблоны</p>
           <div className="grid grid-cols-2 gap-2">
             {TEMPLATES.map((t) => (
@@ -299,7 +299,7 @@ function CreateMarketForm({ onSuccess, prefill }: { onSuccess: () => void; prefi
                   setStep(2);
                   haptic?.selectionChanged();
                 }}
-                className="flex items-center gap-2 p-3 rounded-xl bg-tg-secondary text-left transition-colors active:bg-gray-200"
+                className="flex items-center gap-2 p-3 rounded-xl bg-tg-secondary text-left transition-colors active:bg-white/10"
               >
                 <span className="text-xl">{t.icon}</span>
                 <span className="text-xs font-medium">{t.label}</span>
@@ -309,7 +309,7 @@ function CreateMarketForm({ onSuccess, prefill }: { onSuccess: () => void; prefi
         </div>
 
         {/* Or enter manually */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-3">
+        <div className="glass-card p-4 space-y-3">
           <p className="text-xs text-tg-hint">Или введи свой вопрос</p>
           <input
             value={form.title}
@@ -334,15 +334,15 @@ function CreateMarketForm({ onSuccess, prefill }: { onSuccess: () => void; prefi
     return (
       <div className="space-y-3">
         {/* Title preview */}
-        <div className="bg-blue-50 rounded-xl px-4 py-3 border border-blue-100">
-          <p className="text-xs text-blue-600 mb-1">Вопрос рынка</p>
-          <p className="text-sm font-semibold text-blue-900">{form.title}</p>
-          <button onClick={() => setStep(1)} className="text-xs text-blue-500 mt-1">
+        <div className="bg-blue-500/10 rounded-xl px-4 py-3 border border-blue-500/20">
+          <p className="text-xs text-blue-400 mb-1">Вопрос рынка</p>
+          <p className="text-sm font-semibold">{form.title}</p>
+          <button onClick={() => setStep(1)} className="text-xs text-blue-400 mt-1">
             Изменить
           </button>
         </div>
 
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-3">
+        <div className="glass-card p-4 space-y-3">
           {/* Category chips */}
           <div>
             <p className="text-xs text-tg-hint mb-1.5">Категория</p>
@@ -381,7 +381,7 @@ function CreateMarketForm({ onSuccess, prefill }: { onSuccess: () => void; prefi
                     update({ closesAt: preset.days === -1 ? endOfYear() : addDays(preset.days) });
                     haptic?.selectionChanged();
                   }}
-                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-tg-secondary text-tg-text active:bg-gray-200"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-tg-secondary text-tg-text active:bg-white/10"
                 >
                   {preset.label}
                 </button>
@@ -437,15 +437,15 @@ function CreateMarketForm({ onSuccess, prefill }: { onSuccess: () => void; prefi
   return (
     <div className="space-y-3">
       {/* Preview card */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <div className="glass-card p-4">
         <p className="text-xs text-tg-hint mb-2">Предпросмотр</p>
         <div className="bg-tg-secondary rounded-xl p-3">
           <div className="text-sm font-semibold mb-1">{form.title}</div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Открыт</span>
+            <span className="bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full">Открыт</span>
             <span>{CATEGORY_ICONS[form.category]} {CATEGORY_LABELS[form.category]}</span>
             <span>{form.ammType.toUpperCase()}</span>
-            {form.isFeatured && <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Featured</span>}
+            {form.isFeatured && <span className="bg-purple-500/10 text-purple-400 px-2 py-0.5 rounded-full">Featured</span>}
           </div>
           {form.description && (
             <p className="text-xs text-tg-hint mt-2 line-clamp-2">{form.description}</p>
@@ -453,10 +453,10 @@ function CreateMarketForm({ onSuccess, prefill }: { onSuccess: () => void; prefi
           {/* Price bar */}
           <div className="mt-2">
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-green-600 font-medium">ДА {Math.round(form.initialPrice * 100)}%</span>
-              <span className="text-red-600 font-medium">НЕТ {Math.round((1 - form.initialPrice) * 100)}%</span>
+              <span className="text-green-400 font-medium">ДА {Math.round(form.initialPrice * 100)}%</span>
+              <span className="text-red-400 font-medium">НЕТ {Math.round((1 - form.initialPrice) * 100)}%</span>
             </div>
-            <div className="h-2 rounded-full bg-red-200 overflow-hidden">
+            <div className="h-2 rounded-full bg-red-500/20 overflow-hidden">
               <div
                 className="h-full bg-green-500 rounded-full transition-all"
                 style={{ width: `${form.initialPrice * 100}%` }}
@@ -469,7 +469,7 @@ function CreateMarketForm({ onSuccess, prefill }: { onSuccess: () => void; prefi
         </div>
       </div>
 
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-3">
+      <div className="glass-card p-4 space-y-3">
         {/* Market type */}
         <div>
           <p className="text-xs text-tg-hint mb-1.5">Тип рынка</p>
@@ -564,7 +564,7 @@ function CreateMarketForm({ onSuccess, prefill }: { onSuccess: () => void; prefi
 
         {/* Errors */}
         {mutation.isError && (
-          <div className="bg-red-50 text-red-600 text-xs font-medium rounded-lg px-3 py-2">
+          <div className="bg-red-500/10 text-red-400 text-xs font-medium rounded-lg px-3 py-2">
             Ошибка: {(mutation.error as Error).message}
           </div>
         )}
@@ -593,7 +593,7 @@ function CreateMarketForm({ onSuccess, prefill }: { onSuccess: () => void; prefi
 function GuideSection({ title, children }: { title: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="glass-card overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-4 py-3 text-left"
@@ -602,7 +602,7 @@ function GuideSection({ title, children }: { title: string; children: React.Reac
         <span className="text-tg-hint text-lg">{open ? "−" : "+"}</span>
       </button>
       {open && (
-        <div className="px-4 pb-4 text-sm text-tg-text space-y-2 leading-relaxed border-t border-gray-100 pt-3">
+        <div className="px-4 pb-4 text-sm text-tg-text space-y-2 leading-relaxed border-t border-white/10 pt-3">
           {children}
         </div>
       )}
@@ -649,7 +649,7 @@ function GuidePage() {
           <li><b>Burn</b> — пара уничтожается, PRC возвращается (SELL YES + SELL NO)</li>
         </ul>
         <p className="font-medium mt-2">Пример:</p>
-        <div className="bg-gray-50 rounded-lg p-3 text-xs space-y-1">
+        <div className="bg-white/5 rounded-lg p-3 text-xs space-y-1">
           <p>Алиса: «Куплю YES по 0.65» (платит 6.50 PRC за 10 акций)</p>
           <p>Боб: «Куплю NO по 0.35» → это = «Продам YES по 0.65»</p>
           <p>Сделка Mint: создаётся 10 YES (Алисе) + 10 NO (Бобу)</p>
@@ -671,14 +671,14 @@ function GuidePage() {
         </ul>
         <p className="font-medium mt-2">Плюсы и минусы:</p>
         <div className="grid grid-cols-2 gap-2">
-          <div className="bg-green-50 rounded-lg p-2 text-xs">
-            <p className="font-medium text-green-700">Плюсы</p>
+          <div className="bg-green-500/10 rounded-lg p-2 text-xs">
+            <p className="font-medium text-green-400">Плюсы</p>
             <p>Всегда есть цена</p>
             <p>Можно торговать сразу</p>
             <p>Простой для юзеров</p>
           </div>
-          <div className="bg-red-50 rounded-lg p-2 text-xs">
-            <p className="font-medium text-red-700">Минусы</p>
+          <div className="bg-red-500/10 rounded-lg p-2 text-xs">
+            <p className="font-medium text-red-400">Минусы</p>
             <p>Проскальзывание цены</p>
             <p>Нет лимитных ордеров</p>
             <p>Менее точная цена</p>
@@ -689,19 +689,19 @@ function GuidePage() {
       <GuideSection title="Жизненный цикл рынка">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">open</span>
+            <span className="bg-green-500/10 text-green-400 text-xs px-2 py-0.5 rounded-full font-medium">open</span>
             <span>Рынок создан, торги идут</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="bg-yellow-100 text-yellow-700 text-xs px-2 py-0.5 rounded-full font-medium">trading_closed</span>
+            <span className="bg-yellow-500/10 text-yellow-400 text-xs px-2 py-0.5 rounded-full font-medium">trading_closed</span>
             <span>Торги закрыты (по дате), ждёт резолюции</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">resolved</span>
+            <span className="bg-blue-500/10 text-blue-400 text-xs px-2 py-0.5 rounded-full font-medium">resolved</span>
             <span>Админ выбрал исход (YES или NO), выплаты прошли</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full font-medium">cancelled</span>
+            <span className="bg-red-500/10 text-red-400 text-xs px-2 py-0.5 rounded-full font-medium">cancelled</span>
             <span>Рынок отменён, все деньги возвращены</span>
           </div>
         </div>
@@ -812,7 +812,7 @@ export function AdminPage() {
 
   return (
     <div className="max-w-lg mx-auto bg-tg-bg text-tg-text min-h-screen">
-      <div className="sticky top-0 z-40 bg-tg-bg border-b border-gray-200">
+      <div className="sticky top-0 z-40 bg-tg-bg border-b border-white/10">
         <div className="flex items-center justify-between px-4 py-3">
           <button onClick={() => navigate(-1)} className="text-tg-link text-sm">
             &larr; Назад
@@ -821,7 +821,7 @@ export function AdminPage() {
           <div className="w-12" />
         </div>
 
-        <div className="flex border-b border-gray-200">
+        <div className="flex border-b border-white/10">
           <button
             onClick={() => setTab("markets")}
             className={`flex-1 py-2 text-sm font-medium text-center border-b-2 transition-colors ${
@@ -883,7 +883,7 @@ export function AdminPage() {
             )}
 
             {actionMutation.isError && (
-              <div className="text-xs text-red-600 text-center">
+              <div className="text-xs text-red-400 text-center">
                 Ошибка: {(actionMutation.error as Error).message}
               </div>
             )}

@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { motion } from "framer-motion";
 import { useMarketDetail, usePriceHistory } from "@/hooks/useMarkets";
 import { PriceChart } from "@/components/PriceChart";
 import { PriceBar } from "@/components/PriceBar";
@@ -7,6 +8,7 @@ import { TradePanel } from "@/components/TradePanel";
 import { OrderBookDisplay } from "@/components/OrderBookDisplay";
 import { LimitOrderForm } from "@/components/LimitOrderForm";
 import { OpenOrders } from "@/components/OpenOrders";
+import { QuickPredict } from "@/components/QuickPredict";
 import { Skeleton } from "@/components/Skeleton";
 import { useWebApp } from "@/hooks/useWebApp";
 import { categoryIcon, formatTimeLeft, formatNumber } from "@/utils/format";
@@ -51,7 +53,12 @@ export function MarketPage() {
   const isClob = market.amm_type === "clob";
 
   return (
-    <div className="h-full overflow-y-auto max-w-lg mx-auto bg-tg-bg text-tg-text">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
+      className="h-full overflow-y-auto max-w-lg mx-auto bg-tg-bg text-tg-text"
+    >
     <div className="px-4 py-4 space-y-4">
       {/* Header */}
       <div>
@@ -60,10 +67,10 @@ export function MarketPage() {
           <span
             className={`text-xs px-2 py-0.5 rounded-full font-medium ${
               market.status === "open"
-                ? "bg-green-100 text-green-700"
+                ? "bg-green-500/10 text-green-400"
                 : market.status === "resolved"
-                ? "bg-blue-100 text-blue-700"
-                : "bg-gray-100 text-gray-700"
+                ? "bg-blue-500/10 text-blue-400"
+                : "bg-white/10 text-tg-hint"
             }`}
           >
             {STATUS_LABELS[market.status] ?? market.status}
@@ -97,9 +104,12 @@ export function MarketPage() {
         </div>
       </div>
 
+      {/* Quick Predict */}
+      <QuickPredict market={market} />
+
       {/* Price chart (LMSR only — CLOB markets use order book) */}
       {!isClob && (
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+        <div className="glass-card p-3">
           <h3 className="text-sm font-semibold mb-2">Как менялось мнение</h3>
           <PriceChart data={history ?? []} />
         </div>
@@ -118,7 +128,7 @@ export function MarketPage() {
 
       {/* Resolution Rules */}
       {market.resolution_source && (
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+        <div className="glass-card p-4">
           <h3 className="text-sm font-semibold mb-1.5 flex items-center gap-1.5">
             📋 Как определяется результат
           </h3>
@@ -130,8 +140,8 @@ export function MarketPage() {
 
       {/* Resolution info */}
       {market.status === "resolved" && (
-        <div className="bg-blue-50 rounded-xl p-4 text-center">
-          <div className="text-sm text-blue-700 font-medium">
+        <div className="bg-blue-500/10 rounded-xl p-4 text-center border border-blue-500/20">
+          <div className="text-sm text-blue-400 font-medium">
             ✅ Ответ:{" "}
             <span className="font-bold">
               {market.resolution_outcome === "yes" ? "ДА" : market.resolution_outcome === "no" ? "НЕТ" : market.resolution_outcome}
@@ -140,6 +150,6 @@ export function MarketPage() {
         </div>
       )}
     </div>
-    </div>
+    </motion.div>
   );
 }

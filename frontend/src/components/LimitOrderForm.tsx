@@ -5,6 +5,7 @@ import { useOrderBookStore } from "@/stores/orderbookStore";
 import { usePlaceOrder } from "@/hooks/useOrderBook";
 import { useWebApp } from "@/hooks/useWebApp";
 import { formatPRC } from "@/utils/format";
+import { fireConfetti } from "@/utils/confetti";
 
 interface LimitOrderFormProps {
   market: MarketDetail;
@@ -68,6 +69,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
         quantity: numQuantity,
       });
       haptic?.notificationOccurred("success");
+      fireConfetti();
       setQuantity("");
     } catch (e: any) {
       haptic?.notificationOccurred("error");
@@ -88,7 +90,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
   const quantityPresets = [5, 10, 25, 50];
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-3">
+    <div className="glass-card p-4 space-y-3">
       {/* BUY / SELL toggle */}
       <div className="flex gap-2">
         <button
@@ -152,7 +154,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
       {/* Hint when no price set */}
       {!price && (
         <p className="text-xs text-tg-hint text-center py-1">
-          Нажми на цену выше ☝️
+          Нажми на цену выше
         </p>
       )}
 
@@ -221,7 +223,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 text-red-600 text-xs font-medium rounded-lg px-3 py-2">
+        <div className="bg-red-500/10 text-red-400 text-xs font-medium rounded-lg px-3 py-2">
           {error}
         </div>
       )}
@@ -241,12 +243,12 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
             <span className="text-tg-hint">Множитель</span>
             <span className="font-medium">x{mult.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between border-t border-gray-200 pt-1">
+          <div className="flex justify-between border-t border-white/10 pt-1">
             <span className="text-tg-hint font-medium">
               Прибыль (если угадаешь)
             </span>
             <span
-              className={`font-bold ${isYes ? "text-green-600" : "text-red-600"}`}
+              className={`font-bold ${isYes ? "text-green-400" : "text-red-400"}`}
             >
               +{formatPRC(profit)}
             </span>

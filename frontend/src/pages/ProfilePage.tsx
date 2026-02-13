@@ -50,7 +50,7 @@ export function ProfilePage() {
     <div className="px-4 py-4 space-y-4">
       {/* Profile header */}
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center text-2xl font-bold text-primary-600">
+        <div className="w-16 h-16 rounded-full bg-primary-500/20 flex items-center justify-center text-2xl font-bold text-primary-500">
           {user.first_name[0]}
         </div>
         <div>
@@ -63,7 +63,7 @@ export function ProfilePage() {
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+        <div className="glass-card p-3">
           <div className="text-xs text-tg-hint">На счету</div>
           <div className="text-lg font-bold">{formatPRC(user.balance)}</div>
           <button
@@ -94,22 +94,22 @@ export function ProfilePage() {
             </div>
           )}
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+        <div className="glass-card p-3">
           <div className="text-xs text-tg-hint">Заработок</div>
           <div
             className={`text-lg font-bold ${
-              (user.total_profit ?? 0) >= 0 ? "text-yes-dark" : "text-no-dark"
+              (user.total_profit ?? 0) >= 0 ? "text-green-400" : "text-red-400"
             }`}
           >
             {(user.total_profit ?? 0) >= 0 ? "+" : ""}
             {formatPRC(user.total_profit ?? 0)}
           </div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+        <div className="glass-card p-3">
           <div className="text-xs text-tg-hint">Прогнозов</div>
           <div className="text-lg font-bold">{user.total_trades ?? 0}</div>
         </div>
-        <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
+        <div className="glass-card p-3">
           <div className="text-xs text-tg-hint">Угадано</div>
           <div className="text-lg font-bold">
             {formatPercent((user.win_rate ?? 0) / 100)}
@@ -118,7 +118,7 @@ export function ProfilePage() {
       </div>
 
       {/* Referral */}
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <div className="glass-card p-4">
         <h3 className="text-sm font-semibold mb-2">Пригласи друга</h3>
         <div className="flex items-center gap-2">
           <code className="flex-1 min-w-0 truncate bg-tg-secondary rounded px-3 py-2 text-sm font-mono">
@@ -128,7 +128,7 @@ export function ProfilePage() {
             onClick={() => navigator.clipboard.writeText(user.referral_code)}
             className="px-3 py-2 bg-tg-button text-tg-button-text rounded text-sm"
           >
-            📋 Скопировать
+            Скопировать
           </button>
         </div>
         <div className="text-xs text-tg-hint mt-2">
@@ -148,7 +148,7 @@ export function ProfilePage() {
           {transactions?.map((tx) => (
             <div
               key={tx.id}
-              className="flex items-center justify-between bg-white rounded-lg p-3 shadow-sm border border-gray-100"
+              className="flex items-center justify-between glass-card p-3"
             >
               <div>
                 <div className="text-sm font-medium">{TX_TYPE_LABELS[tx.type] ?? tx.type}</div>
@@ -158,7 +158,7 @@ export function ProfilePage() {
               </div>
               <span
                 className={`text-sm font-semibold ${
-                  tx.amount >= 0 ? "text-yes-dark" : "text-no-dark"
+                  tx.amount >= 0 ? "text-green-400" : "text-red-400"
                 }`}
               >
                 {tx.amount >= 0 ? "+" : ""}

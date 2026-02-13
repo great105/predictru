@@ -15,10 +15,10 @@ const INTENT_LABELS: Record<string, string> = {
 };
 
 const INTENT_COLORS: Record<string, string> = {
-  buy_yes: "text-green-600 bg-green-50",
-  buy_no: "text-red-600 bg-red-50",
-  sell_yes: "text-red-600 bg-red-50",
-  sell_no: "text-green-600 bg-green-50",
+  buy_yes: "text-green-400 bg-green-500/10",
+  buy_no: "text-red-400 bg-red-500/10",
+  sell_yes: "text-red-400 bg-red-500/10",
+  sell_no: "text-green-400 bg-green-500/10",
 };
 
 function OrderRow({ order }: { order: UserOrder }) {
@@ -47,12 +47,12 @@ function OrderRow({ order }: { order: UserOrder }) {
   };
 
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0 min-w-0">
+    <div className="flex items-center gap-3 py-2.5 border-b border-white/5 last:border-0 min-w-0">
       <div className="flex-1 min-w-0 overflow-hidden">
         <div className="flex items-center gap-2 mb-1">
           <span
             className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
-              INTENT_COLORS[order.original_intent] ?? "text-gray-600 bg-gray-50"
+              INTENT_COLORS[order.original_intent] ?? "text-tg-hint bg-white/5"
             }`}
           >
             {INTENT_LABELS[order.original_intent] ?? order.original_intent}
@@ -64,7 +64,7 @@ function OrderRow({ order }: { order: UserOrder }) {
 
         {/* Progress bar */}
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
               className="h-full bg-tg-button rounded-full transition-all"
               style={{ width: `${progress}%` }}
@@ -82,7 +82,7 @@ function OrderRow({ order }: { order: UserOrder }) {
         className={`text-xs font-medium px-2 py-1 rounded-lg transition-colors disabled:opacity-50 ${
           confirmCancel
             ? "text-white bg-red-500"
-            : "text-red-500 bg-red-50 hover:bg-red-100"
+            : "text-red-400 bg-red-500/10"
         }`}
       >
         {cancelMutation.isPending ? "..." : confirmCancel ? "Точно?" : "Отменить"}
@@ -96,7 +96,7 @@ export function OpenOrders({ marketId }: OpenOrdersProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <div className="glass-card p-4">
         <h3 className="text-sm font-semibold mb-2">Твои заявки</h3>
         <div className="text-center text-tg-hint text-sm py-4">Загрузка...</div>
       </div>
@@ -108,7 +108,7 @@ export function OpenOrders({ marketId }: OpenOrdersProps) {
   }
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <div className="glass-card p-4">
       <h3 className="text-sm font-semibold mb-2">
         Твои заявки ({orders.length})
       </h3>

@@ -73,7 +73,7 @@ export function ProposePage() {
     <div className="px-4 py-4 space-y-4">
       <h1 className="text-xl font-bold">Предложить рынок</h1>
 
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-3">
+      <div className="glass-card p-4 space-y-3">
         <div>
           <label className="text-xs text-tg-hint block mb-1">Вопрос</label>
           <input
@@ -136,17 +136,17 @@ export function ProposePage() {
             {proposals.map((p) => (
               <div
                 key={p.id}
-                className="bg-white rounded-lg p-3 shadow-sm border border-gray-100"
+                className="glass-card p-3"
               >
                 <div className="text-sm font-medium">{p.title}</div>
                 <div className="flex items-center gap-2 mt-1">
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full ${
                       p.status === "approved"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-green-500/10 text-green-400"
                         : p.status === "rejected"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
+                        ? "bg-red-500/10 text-red-400"
+                        : "bg-yellow-500/10 text-yellow-400"
                     }`}
                   >
                     {PROPOSAL_STATUS[p.status] ?? p.status}

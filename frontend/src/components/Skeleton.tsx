@@ -4,13 +4,13 @@ interface SkeletonProps {
 
 export function Skeleton({ className = "" }: SkeletonProps) {
   return (
-    <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
+    <div className={`shimmer rounded ${className}`} />
   );
 }
 
 export function MarketCardSkeleton() {
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 space-y-3">
+    <div className="glass-card p-4 space-y-3">
       <div className="flex gap-2">
         <Skeleton className="w-7 h-7 rounded" />
         <div className="flex-1 space-y-2">

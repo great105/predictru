@@ -6,6 +6,7 @@ import { useBuy } from "@/hooks/useTrade";
 import { useWebApp } from "@/hooks/useWebApp";
 import { estimateShares } from "@/utils/lmsr";
 import { formatPRC } from "@/utils/format";
+import { fireConfetti } from "@/utils/confetti";
 
 interface TradePanelProps {
   market: MarketDetail;
@@ -50,6 +51,7 @@ export function TradePanel({ market }: TradePanelProps) {
         amount: numAmount,
       });
       haptic?.notificationOccurred("success");
+      fireConfetti();
       reset();
     } catch {
       haptic?.notificationOccurred("error");
@@ -87,7 +89,7 @@ export function TradePanel({ market }: TradePanelProps) {
   const canBuy = numAmount > 0 && estimatedShares > 0;
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <div className="glass-card p-4">
       <h3 className="text-sm font-semibold mb-3">Твой прогноз</h3>
 
       {/* Outcome buttons with multipliers */}
@@ -97,7 +99,7 @@ export function TradePanel({ market }: TradePanelProps) {
           className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-colors ${
             selectedOutcome === "yes"
               ? "bg-green-500 text-white shadow-md"
-              : "bg-green-50 text-green-700"
+              : "bg-green-500/10 text-green-400"
           }`}
         >
           ДА
@@ -107,7 +109,7 @@ export function TradePanel({ market }: TradePanelProps) {
           className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-colors ${
             selectedOutcome === "no"
               ? "bg-red-500 text-white shadow-md"
-              : "bg-red-50 text-red-700"
+              : "bg-red-500/10 text-red-400"
           }`}
         >
           НЕТ
@@ -145,17 +147,17 @@ export function TradePanel({ market }: TradePanelProps) {
           <div
             className={`border rounded-xl p-4 mb-3 text-center ${
               isNo
-                ? "bg-red-50 border-red-200"
-                : "bg-green-50 border-green-200"
+                ? "bg-red-500/10 border-red-500/20"
+                : "bg-green-500/10 border-green-500/20"
             }`}
           >
             <div
-              className={`text-xs mb-1 ${isNo ? "text-red-600" : "text-green-600"}`}
+              className={`text-xs mb-1 ${isNo ? "text-red-400" : "text-green-400"}`}
             >
               Если угадаешь:
             </div>
             <div
-              className={`text-3xl font-bold ${isNo ? "text-red-600" : "text-green-600"}`}
+              className={`text-3xl font-bold ${isNo ? "text-red-400" : "text-green-400"}`}
             >
               получишь {formatPRC(potentialWin)}
             </div>
@@ -170,10 +172,10 @@ export function TradePanel({ market }: TradePanelProps) {
               <span className="text-tg-hint">Комиссия 2%</span>
               <span className="text-tg-hint">~{formatPRC(fee)}</span>
             </div>
-            <div className="flex justify-between border-t border-gray-200 pt-1">
+            <div className="flex justify-between border-t border-white/10 pt-1">
               <span className="text-tg-hint font-medium">Если угадаешь</span>
               <span
-                className={`font-bold ${isNo ? "text-red-600" : "text-green-600"}`}
+                className={`font-bold ${isNo ? "text-red-400" : "text-green-400"}`}
               >
                 {formatPRC(potentialWin)}
               </span>

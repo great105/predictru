@@ -14,7 +14,7 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
 
   if (isLoading || !book) {
     return (
-      <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+      <div className="glass-card p-4">
         <h3 className="text-sm font-semibold mb-3">Книга заявок</h3>
         <div className="text-center text-tg-hint text-sm py-8">Загрузка...</div>
       </div>
@@ -36,7 +36,7 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+    <div className="glass-card p-4">
       <h3 className="text-sm font-semibold mb-3">Книга заявок</h3>
 
       {/* Header */}
@@ -57,10 +57,10 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
               className="w-full flex justify-between items-center text-xs py-1 px-1 rounded relative overflow-hidden"
             >
               <div
-                className="absolute inset-y-0 right-0 bg-red-100"
+                className="absolute inset-y-0 right-0 bg-red-500/10"
                 style={{ width: `${(level.quantity / maxQty) * 100}%` }}
               />
-              <span className="relative text-red-600 font-medium">
+              <span className="relative text-red-400 font-medium">
                 {formatPercent(level.price)}
               </span>
               <span className="relative text-tg-text">
@@ -72,7 +72,7 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
       </div>
 
       {/* Spread / Last price */}
-      <div className="text-center py-1.5 border-y border-gray-100">
+      <div className="text-center py-1.5 border-y border-white/10">
         <span className="text-sm font-bold">
           {book.last_price ? formatPercent(book.last_price) : "—"}
         </span>
@@ -91,10 +91,10 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
               className="w-full flex justify-between items-center text-xs py-1 px-1 rounded relative overflow-hidden"
             >
               <div
-                className="absolute inset-y-0 right-0 bg-green-100"
+                className="absolute inset-y-0 right-0 bg-green-500/10"
                 style={{ width: `${(level.quantity / maxQty) * 100}%` }}
               />
-              <span className="relative text-green-600 font-medium">
+              <span className="relative text-green-400 font-medium">
                 {formatPercent(level.price)}
               </span>
               <span className="relative text-tg-text">
