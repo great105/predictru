@@ -84,7 +84,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     axios
-      .get("/v1/markets/", { params: { limit: 6 } })
+      .get("/v1/markets", { params: { limit: 6 } })
       .then((r) => setMarkets(r.data?.items ?? []))
       .catch(() => {});
   }, []);
