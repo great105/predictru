@@ -24,7 +24,13 @@ export function BetDetailPage() {
 
   useEffect(() => {
     backButton?.show();
-    const handler = () => navigate(-1);
+    const handler = () => {
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate("/bets", { replace: true });
+      }
+    };
     backButton?.onClick(handler);
     return () => {
       backButton?.offClick(handler);
