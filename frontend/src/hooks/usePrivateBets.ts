@@ -50,6 +50,8 @@ export function useCreateBet() {
       stake_amount: number;
       closes_at: string;
       outcome: string;
+      is_closed?: boolean;
+      allowed_usernames?: string[];
     }) => {
       const { data: bet } = await betsApi.create(data);
       return bet;

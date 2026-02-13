@@ -11,6 +11,8 @@ class PrivateBetCreate(BaseModel):
     stake_amount: Decimal = Field(..., ge=10, le=10000)
     closes_at: datetime
     outcome: str = Field(..., pattern="^(yes|no)$")
+    is_closed: bool = False
+    allowed_usernames: list[str] = []
 
 
 class JoinBetRequest(BaseModel):
@@ -49,6 +51,8 @@ class PrivateBetRead(BaseModel):
     resolution_outcome: str | None = None
     my_outcome: str | None = None
     my_payout: Decimal | None = None
+    is_closed: bool = False
+    allowed_usernames: list[str] = []
 
     model_config = {"from_attributes": True}
 

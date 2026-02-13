@@ -64,9 +64,16 @@ export function BetDetailPage() {
       <div className="glass-card p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <h1 className="text-base font-bold leading-tight flex-1">{bet.title}</h1>
-          <span className={`text-xs font-medium shrink-0 ${statusInfo.color}`}>
-            {statusInfo.text}
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            {bet.is_closed && (
+              <span className="text-xs bg-amber-500/15 text-amber-400 px-2 py-0.5 rounded-full">
+                Закрытый
+              </span>
+            )}
+            <span className={`text-xs font-medium ${statusInfo.color}`}>
+              {statusInfo.text}
+            </span>
+          </div>
         </div>
 
         {bet.description && (
@@ -250,6 +257,8 @@ export function BetDetailPage() {
           noCount={bet.no_count}
           closesAt={bet.closes_at}
           creatorName={bet.creator_name}
+          isClosed={bet.is_closed}
+          allowedUsernames={bet.allowed_usernames}
         />
       )}
 

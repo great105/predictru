@@ -12,6 +12,8 @@ interface ShareInviteProps {
   closesAt: string;
   creatorName: string;
   botUsername?: string;
+  isClosed?: boolean;
+  allowedUsernames?: string[];
 }
 
 export function ShareInvite({
@@ -24,6 +26,8 @@ export function ShareInvite({
   closesAt,
   creatorName,
   botUsername = "predskazu_bot",
+  isClosed = false,
+  allowedUsernames = [],
 }: ShareInviteProps) {
   const { haptic, webApp } = useWebApp();
   const [copied, setCopied] = useState(false);
@@ -82,6 +86,19 @@ export function ShareInvite({
         <div>Участников: {total} (ДА: {yesCount} / НЕТ: {noCount})</div>
         <div>До: {closesStr}</div>
       </div>
+
+      {isClosed && allowedUsernames.length > 0 && (
+        <div className="bg-amber-500/10 rounded-lg p-3 space-y-1">
+          <div className="text-xs text-amber-400 font-medium">Приглашённые участники:</div>
+          <div className="flex flex-wrap gap-1.5">
+            {allowedUsernames.map((u) => (
+              <span key={u} className="text-xs bg-white/10 rounded-full px-2 py-0.5">
+                @{u}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-2">
         <button

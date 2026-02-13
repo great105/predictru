@@ -149,6 +149,8 @@ export interface PrivateBet {
   resolution_outcome: string | null;
   my_outcome: string | null;
   my_payout: number | null;
+  is_closed: boolean;
+  allowed_usernames: string[];
 }
 
 export interface BetParticipant {

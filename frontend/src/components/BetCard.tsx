@@ -33,6 +33,11 @@ export function BetCard({ bet }: { bet: PrivateBet }) {
       <div className="flex items-start justify-between gap-2 mb-2">
         <h3 className="text-sm font-medium leading-tight flex-1">{bet.title}</h3>
         <div className="flex items-center gap-2 shrink-0">
+          {bet.is_closed && (
+            <span className="text-xs text-amber-400" title="Закрытый спор">
+              &#128274;
+            </span>
+          )}
           {isWin && (
             <span className="text-xs font-bold text-green-400">+{formatPRC(profit)}</span>
           )}

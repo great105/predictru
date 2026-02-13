@@ -1,3 +1,4 @@
+import json
 import logging
 import secrets
 import uuid
@@ -40,6 +41,8 @@ class PrivateBetService:
         stake_amount: Decimal,
         closes_at: datetime,
         outcome: str,
+        is_closed: bool = False,
+        allowed_usernames: list[str] | None = None,
     ) -> PrivateBet:
         if outcome not in ("yes", "no"):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid outcome")
@@ -75,6 +78,12 @@ class PrivateBetService:
 
         voting_deadline = closes_at + timedelta(hours=24)
 
+        # Normalize allowed usernames: lowercase, strip @
+        usernames_json = None
+        if is_closed and allowed_usernames:
+            normalized = [u.lower().lstrip("@") for u in allowed_usernames if u.strip()]
+            usernames_json = json.dumps(normalized) if normalized else None
+
         bet = PrivateBet(
             title=title,
             description=description,
@@ -87,6 +96,8 @@ class PrivateBetService:
             total_pool=stake_amount,
             yes_count=1 if outcome == "yes" else 0,
             no_count=1 if outcome == "no" else 0,
+            is_closed=is_closed,
+            allowed_usernames=usernames_json,
         )
         self.db.add(bet)
         await self.db.flush()
@@ -133,6 +144,19 @@ class PrivateBetService:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Bet not found")
         if bet.status != PrivateBetStatus.OPEN:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Bet is no longer open")
+
+        # Check closed bet whitelist
+        if bet.is_closed and bet.allowed_usernames:
+            user = await self.db.get(User, user_id)
+            if user is None:
+                raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+            allowed = json.loads(bet.allowed_usernames)
+            username = (user.username or "").lower()
+            if not username or username not in allowed:
+                raise HTTPException(
+                    status.HTTP_403_FORBIDDEN,
+                    "Этот спор только для приглашённых",
+                )
 
         # Check duplicate
         existing = await self.db.execute(

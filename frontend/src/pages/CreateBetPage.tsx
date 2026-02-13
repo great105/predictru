@@ -6,6 +6,13 @@ import { useAuthStore } from "@/stores/authStore";
 
 const STAKE_PRESETS = [25, 50, 100, 250];
 
+function parseUsernames(input: string): string[] {
+  return input
+    .split(/[\s,\n]+/)
+    .map((u) => u.replace(/^@/, "").trim().toLowerCase())
+    .filter((u) => u.length > 0);
+}
+
 export function CreateBetPage() {
   const navigate = useNavigate();
   const { haptic, backButton } = useWebApp();
@@ -19,6 +26,9 @@ export function CreateBetPage() {
   const [customStake, setCustomStake] = useState("");
   const [outcome, setOutcome] = useState<"yes" | "no">("yes");
   const [hours, setHours] = useState(24);
+  const [isClosed, setIsClosed] = useState(false);
+  const [usernamesInput, setUsernamesInput] = useState("");
+  const [usernames, setUsernames] = useState<string[]>([]);
 
   useEffect(() => {
     backButton?.show();
@@ -36,7 +46,25 @@ export function CreateBetPage() {
     effectiveStake >= 10 &&
     effectiveStake <= 10000 &&
     effectiveStake <= balance &&
+    (!isClosed || usernames.length > 0) &&
     !createBet.isPending;
+
+  const handleAddUsernames = () => {
+    const parsed = parseUsernames(usernamesInput);
+    if (parsed.length === 0) return;
+    setUsernames((prev) => {
+      const set = new Set(prev);
+      parsed.forEach((u) => set.add(u));
+      return Array.from(set);
+    });
+    setUsernamesInput("");
+    haptic?.selectionChanged();
+  };
+
+  const handleRemoveUsername = (username: string) => {
+    setUsernames((prev) => prev.filter((u) => u !== username));
+    haptic?.selectionChanged();
+  };
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -50,6 +78,8 @@ export function CreateBetPage() {
         stake_amount: effectiveStake,
         closes_at: closesAt,
         outcome,
+        is_closed: isClosed,
+        allowed_usernames: isClosed ? usernames : [],
       });
       navigate(`/bet/${bet.id}`, { replace: true });
     } catch {
@@ -175,6 +205,87 @@ export function CreateBetPage() {
             НЕТ
           </button>
         </div>
+      </div>
+
+      {/* Closed bet toggle */}
+      <div className="space-y-3">
+        <button
+          type="button"
+          onClick={() => {
+            setIsClosed((v) => !v);
+            haptic?.selectionChanged();
+          }}
+          className="flex items-center gap-3 w-full"
+        >
+          <div
+            className={`w-11 h-6 rounded-full transition-colors relative ${
+              isClosed ? "bg-tg-button" : "bg-white/20"
+            }`}
+          >
+            <div
+              className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
+                isClosed ? "translate-x-[22px]" : "translate-x-0.5"
+              }`}
+            />
+          </div>
+          <span className="text-sm">Закрытый спор (только для приглашённых)</span>
+        </button>
+
+        {isClosed && (
+          <div className="space-y-2">
+            <label className="text-xs text-tg-hint uppercase tracking-wider">
+              Приглашённые (@username)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={usernamesInput}
+                onChange={(e) => setUsernamesInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddUsernames();
+                  }
+                }}
+                placeholder="@user1, @user2"
+                className="flex-1 bg-white/10 rounded-lg px-4 py-2.5 text-sm placeholder:text-tg-hint outline-none min-w-0"
+              />
+              <button
+                type="button"
+                onClick={handleAddUsernames}
+                className="bg-white/10 hover:bg-white/20 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors shrink-0"
+              >
+                +
+              </button>
+            </div>
+
+            {usernames.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {usernames.map((u) => (
+                  <span
+                    key={u}
+                    className="inline-flex items-center gap-1 bg-white/10 rounded-full px-3 py-1 text-xs"
+                  >
+                    @{u}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveUsername(u)}
+                      className="text-tg-hint hover:text-red-400 ml-0.5"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {isClosed && usernames.length === 0 && (
+              <div className="text-xs text-amber-400">
+                Добавьте хотя бы одного участника
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Error */}

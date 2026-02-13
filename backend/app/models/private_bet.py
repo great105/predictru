@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    Boolean,
     DateTime,
     Enum,
     ForeignKey,
@@ -51,6 +52,9 @@ class PrivateBet(UUIDMixin, TimestampMixin, Base):
     voting_deadline: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
+
+    is_closed: Mapped[bool] = mapped_column(Boolean, default=False)
+    allowed_usernames: Mapped[str | None] = mapped_column(Text, default=None)
 
     resolution_outcome: Mapped[str | None] = mapped_column(String(10))
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

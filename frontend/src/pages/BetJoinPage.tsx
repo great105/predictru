@@ -96,7 +96,14 @@ export function BetJoinPage() {
 
       {/* Bet info */}
       <div className="glass-card p-4 space-y-3">
-        <h2 className="text-base font-medium">{bet.title}</h2>
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="text-base font-medium flex-1">{bet.title}</h2>
+          {bet.is_closed && (
+            <span className="text-xs bg-amber-500/15 text-amber-400 px-2 py-0.5 rounded-full shrink-0">
+              Закрытый
+            </span>
+          )}
+        </div>
 
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="bg-white/5 rounded-lg p-2">
@@ -164,7 +171,9 @@ export function BetJoinPage() {
       {/* Error */}
       {joinBet.isError && (
         <div className="text-red-400 text-sm text-center">
-          {(joinBet.error as any)?.response?.data?.detail ?? "Ошибка"}
+          {(joinBet.error as any)?.response?.status === 403
+            ? "Этот спор только для приглашённых участников"
+            : (joinBet.error as any)?.response?.data?.detail ?? "Ошибка"}
         </div>
       )}
 

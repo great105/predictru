@@ -1,3 +1,4 @@
+import json
 import uuid
 
 from fastapi import APIRouter, HTTPException, status
@@ -26,6 +27,13 @@ def _bet_to_read(bet, user_id: uuid.UUID | None = None) -> PrivateBetRead:
                 my_payout = p.payout
                 break
 
+    allowed: list[str] = []
+    if bet.allowed_usernames:
+        try:
+            allowed = json.loads(bet.allowed_usernames)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
     return PrivateBetRead(
         id=bet.id,
         title=bet.title,
@@ -42,6 +50,8 @@ def _bet_to_read(bet, user_id: uuid.UUID | None = None) -> PrivateBetRead:
         resolution_outcome=bet.resolution_outcome,
         my_outcome=my_outcome,
         my_payout=my_payout,
+        is_closed=bet.is_closed,
+        allowed_usernames=allowed,
     )
 
 
@@ -65,6 +75,13 @@ def _bet_to_detail(bet, user_id: uuid.UUID) -> PrivateBetDetail:
             )
         )
 
+    allowed: list[str] = []
+    if bet.allowed_usernames:
+        try:
+            allowed = json.loads(bet.allowed_usernames)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
     return PrivateBetDetail(
         id=bet.id,
         title=bet.title,
@@ -87,6 +104,8 @@ def _bet_to_detail(bet, user_id: uuid.UUID) -> PrivateBetDetail:
         my_vote=my_vote,
         is_creator=bet.created_by == user_id,
         participants=participants,
+        is_closed=bet.is_closed,
+        allowed_usernames=allowed,
     )
 
 
@@ -102,6 +121,8 @@ async def create_bet(
         stake_amount=body.stake_amount,
         closes_at=body.closes_at,
         outcome=body.outcome,
+        is_closed=body.is_closed,
+        allowed_usernames=body.allowed_usernames or None,
     )
     return _bet_to_read(bet)
 

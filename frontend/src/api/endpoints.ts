@@ -115,6 +115,8 @@ export const betsApi = {
     stake_amount: number;
     closes_at: string;
     outcome: string;
+    is_closed?: boolean;
+    allowed_usernames?: string[];
   }) => api.post<PrivateBet>("/bets", data),
 
   my: () => api.get<PrivateBet[]>("/bets/my"),
