@@ -71,7 +71,7 @@ export function QuickPredict({ market }: QuickPredictProps) {
         }}
         className="w-full py-3 rounded-xl font-bold text-base bg-tg-button text-tg-button-text"
       >
-        Быстрый прогноз
+        Быстрая ставка
       </button>
 
       <AnimatePresence>
