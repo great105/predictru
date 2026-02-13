@@ -149,7 +149,11 @@ React 18 + Vite + TypeScript + TailwindCSS. Path alias: `@/` → `src/`. Designe
 
 **API client** (`api/client.ts`): Axios instance with base URL `/v1`, auto-injects Bearer token from localStorage, auto-clears on 401.
 
-**Telegram Mini App integration**: `main.tsx` calls `WebApp.ready()`, `.expand()`, `.disableVerticalSwipes()` before React renders. Auth gate in `App.tsx` blocks rendering until JWT obtained.
+**Telegram Mini App integration**: `main.tsx` calls `WebApp.ready()`, `.expand()`, `.disableVerticalSwipes()`, `.setBackgroundColor('#0a0e1a')`, `.setHeaderColor('#0a0e1a')` before React renders. Auth gate in `App.tsx` blocks rendering until JWT obtained.
+
+**Dark glassmorphism theme**: Forced dark theme independent of Telegram's light/dark mode. Body background uses `!important` to override Telegram's inline styles. Tailwind `tg.*` colors are hardcoded dark values (not CSS variables). Glass cards use `backdrop-filter: blur(16px)` + `rgba(255,255,255,0.06)`. Shimmer skeletons via CSS animation. Confetti on successful trades (canvas-confetti). Haptic feedback on interactions. Framer Motion page transitions.
+
+**Test files**: `src/__tests__/` is excluded from `tsconfig.json` — tests run via vitest only, not tsc. Always `import { vi }` explicitly in test files.
 
 **Horizontal scroll prevention**: `overflow-x: hidden` on html/body in `index.css`, `flex-wrap` on all chip/tag rows, `overflow-x-hidden` on Layout root div.
 
@@ -183,7 +187,7 @@ aiogram 3 with aiohttp webhook server on port 8081. Russian-language UI with ric
 
 **Web login bridge**: Bot handles `login_` deep links by writing confirmed user data to Redis (`web_login:{token}`), which backend polls to complete web auth.
 
-**Startup**: Sets bot commands, MenuButtonWebApp, description, short description.
+**Startup**: Sets bot commands, MenuButtonWebApp (with `?v=timestamp` cache buster), description, short description.
 
 Webhook path: `/webhook/bot`.
 
@@ -219,10 +223,12 @@ Copy `.env.example` to `.env`. Key variables: `TELEGRAM_BOT_TOKEN`, `DATABASE_UR
 Auto-deploys on push to `main` branch:
 1. Runs CI first (`needs: ci`)
 2. SSH into production server at `/opt/predictru`
-3. `git fetch && git reset --hard` + `docker compose build --parallel` + `docker compose up -d`
-4. `docker compose restart nginx` (required: nginx caches upstream DNS, new API container gets new IP)
+3. `git fetch && git reset --hard` + `docker compose build --parallel` + `docker compose build --no-cache nginx` (force fresh frontend rebuild)
+4. `docker compose up -d --remove-orphans --force-recreate nginx` + `docker compose restart nginx`
 5. `seed_markets.py` — idempotent seed of prediction markets (skips existing)
 6. Health check on `https://localhost/health` (12 attempts, 10s apart)
+
+**CRITICAL**: `appleboy/ssh-action@v1` does NOT support `script_stop` — if `docker compose build` fails, the script continues and deploys the OLD image. Always verify frontend actually updated after deploy by checking the CSS/JS hash in the HTML response.
 
 ### Manual Deploy
 ```bash
@@ -266,4 +272,8 @@ Production server accessible via SSH: `ssh root@195.26.225.39`. Project at `/opt
 - **Telegram Login Widget**: Asks users for phone number — not suitable for one-click login. Use bot-based deep link auth instead (`https://t.me/bot?start=login_TOKEN`)
 - **nginx/html/ is stale**: The `nginx/html/` directory contains a legacy pre-built Mini App. Production builds from `frontend/` source via Docker multi-stage build. Don't update `nginx/html/` manually
 - **Web admin API**: Use separate `web/src/adminApi.ts` for admin endpoints instead of modifying `api.ts`
-- **Post-push deploy check**: After `git push` to `main`, always verify the deployment succeeded — check GitHub Actions CI/CD status (`gh run list --limit 1`) and confirm the production site is live (`curl -s https://xn--80ahcgkj6ail.xn--p1ai/health`)
+- **Post-push deploy check**: After `git push` to `main`, always verify the deployment succeeded — check GitHub Actions CI/CD status (`gh run list --limit 1`) and confirm the production site is live (`curl -s https://xn--80ahcgkj6ail.xn--p1ai/health`). Also verify frontend updated: `curl -s https://xn--80ahcgkj6ail.xn--p1ai/` and check the JS/CSS hash in the HTML changed
+- **tsc breaks Docker nginx build**: Test files (`src/__tests__/`) using vitest globals (`vi.mock`) or Node modules (`fs`) fail `tsc`. They MUST be excluded in `tsconfig.json` (`"exclude": ["src/__tests__"]`). Since `npm run build` = `tsc && vite build`, a tsc failure means NO frontend gets built, and the old Docker image is silently reused
+- **Telegram WebView caching**: Telegram Desktop aggressively caches Mini App content. Standard HTTP no-cache headers are sometimes ignored. Fix: append `?v=timestamp` to the Mini App URL in `bot/main.py` `on_startup()` via `set_chat_menu_button()`. Bot restarts on every deploy → automatic cache bust
+- **Telegram WebApp overrides body background**: `telegram-web-app.js` sets inline `background-color` on body (white in light theme). CSS variables `--tg-theme-bg-color` are also white in light theme. Fix: use `!important` on body background, call `setBackgroundColor()` / `setHeaderColor()` in `main.tsx`, and hardcode dark tg colors in `tailwind.config.js` instead of using CSS variables
+- **ssh-action silent failures**: `appleboy/ssh-action@v1` ignores `script_stop: true` (unsupported param). If any command fails (e.g., `docker compose build`), the script continues — deploy looks green but uses old images. Health check passes because `/health` hits API container, not nginx
