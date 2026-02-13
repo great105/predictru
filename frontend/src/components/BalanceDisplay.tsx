@@ -8,7 +8,7 @@ export function BalanceDisplay() {
 
   return (
     <div className="flex items-center gap-1 bg-tg-secondary rounded-full px-3 py-1.5">
-      <span className="text-sm font-semibold">{formatPRC(user.balance)}</span>
+      <span className="text-sm font-semibold">🪙 {formatPRC(user.balance)}</span>
     </div>
   );
 }

@@ -23,16 +23,7 @@ export function MarketCard({ market }: MarketCardProps) {
       <PriceBar priceYes={market.price_yes} priceNo={market.price_no} />
 
       <div className="flex justify-between items-center mt-3 text-xs text-tg-hint">
-        <span>Объём: {formatNumber(market.total_volume)} PRC</span>
-        <span
-          className={`px-1.5 py-0.5 rounded font-semibold ${
-            market.amm_type === "clob"
-              ? "bg-blue-50 text-blue-600"
-              : "bg-purple-50 text-purple-600"
-          }`}
-        >
-          {market.amm_type === "clob" ? "Order Book" : "AMM"}
-        </span>
+        <span>🪙 {formatNumber(market.total_volume)} PRC</span>
         <span>{formatTimeLeft(market.closes_at)}</span>
       </div>
     </Link>

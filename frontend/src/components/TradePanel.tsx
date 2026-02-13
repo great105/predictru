@@ -19,10 +19,6 @@ export function TradePanel({ market }: TradePanelProps) {
   const { mainButton, haptic } = useWebApp();
   const buyMutation = useBuy();
 
-  // Multipliers from current prices
-  const yesMult = market.price_yes > 0 ? (1 - FEE) / market.price_yes : 0;
-  const noMult = market.price_no > 0 ? (1 - FEE) / market.price_no : 0;
-
   const isNo = selectedOutcome === "no";
   const sideLabel = isNo ? "НЕТ" : "ДА";
 
@@ -79,22 +75,20 @@ export function TradePanel({ market }: TradePanelProps) {
   if (market.status !== "open") {
     return (
       <div className="p-4 text-center text-tg-hint">
-        Торговля закрыта для этого рынка
+        Ставки больше не принимаются
       </div>
     );
   }
 
   const numAmount = parseFloat(amount) || 0;
   const fee = numAmount * FEE;
-  const multiplier = numAmount > 0 ? estimatedShares / numAmount : 0;
   const potentialWin = estimatedShares;
-  const profit = potentialWin - numAmount;
   const presets = [10, 25, 50, 100];
   const canBuy = numAmount > 0 && estimatedShares > 0;
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <h3 className="text-sm font-semibold mb-3">Сделать ставку</h3>
+      <h3 className="text-sm font-semibold mb-3">Твой прогноз</h3>
 
       {/* Outcome buttons with multipliers */}
       <div className="flex gap-2 mb-4">
@@ -107,9 +101,6 @@ export function TradePanel({ market }: TradePanelProps) {
           }`}
         >
           ДА
-          <span className="text-xs font-normal opacity-80 ml-1">
-            x{yesMult.toFixed(1)}
-          </span>
         </button>
         <button
           onClick={() => { setOutcome("no"); haptic?.selectionChanged(); }}
@@ -120,9 +111,6 @@ export function TradePanel({ market }: TradePanelProps) {
           }`}
         >
           НЕТ
-          <span className="text-xs font-normal opacity-80 ml-1">
-            x{noMult.toFixed(1)}
-          </span>
         </button>
       </div>
 
@@ -132,7 +120,7 @@ export function TradePanel({ market }: TradePanelProps) {
         inputMode="decimal"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        placeholder="Сколько ставишь (PRC)"
+        placeholder="Сколько ставишь 🪙"
         className="w-full bg-tg-secondary rounded-lg px-4 py-2.5 text-base font-semibold outline-none mb-2"
       />
       <div className="flex gap-2 mb-3">
@@ -164,23 +152,18 @@ export function TradePanel({ market }: TradePanelProps) {
             <div
               className={`text-xs mb-1 ${isNo ? "text-red-600" : "text-green-600"}`}
             >
-              Ставлю {formatPRC(numAmount)} на {sideLabel}
+              Если угадаешь:
             </div>
             <div
               className={`text-3xl font-bold ${isNo ? "text-red-600" : "text-green-600"}`}
             >
-              +{formatPRC(profit)}
-            </div>
-            <div
-              className={`text-sm mt-1 ${isNo ? "text-red-500" : "text-green-500"}`}
-            >
-              выигрыш {formatPRC(potentialWin)} (x{multiplier.toFixed(1)})
+              получишь {formatPRC(potentialWin)}
             </div>
           </div>
 
           <div className="bg-tg-secondary rounded-xl p-3 text-sm space-y-1 mb-3">
             <div className="flex justify-between">
-              <span className="text-tg-hint">Ставка</span>
+              <span className="text-tg-hint">Твоя ставка</span>
               <span className="font-medium">{formatPRC(numAmount)}</span>
             </div>
             <div className="flex justify-between">
@@ -188,7 +171,7 @@ export function TradePanel({ market }: TradePanelProps) {
               <span className="text-tg-hint">~{formatPRC(fee)}</span>
             </div>
             <div className="flex justify-between border-t border-gray-200 pt-1">
-              <span className="text-tg-hint font-medium">Если угадал</span>
+              <span className="text-tg-hint font-medium">Если угадаешь</span>
               <span
                 className={`font-bold ${isNo ? "text-red-600" : "text-green-600"}`}
               >
@@ -196,7 +179,7 @@ export function TradePanel({ market }: TradePanelProps) {
               </span>
             </div>
             <div className="flex justify-between opacity-50">
-              <span className="text-tg-hint">Баланс</span>
+              <span className="text-tg-hint">На счету</span>
               <span>{formatPRC(user?.balance ?? 0)}</span>
             </div>
           </div>
@@ -209,7 +192,7 @@ export function TradePanel({ market }: TradePanelProps) {
             }`}
           >
             {buyMutation.isPending
-              ? "Отправка..."
+              ? "Отправляем..."
               : `Ставлю на ${sideLabel} — ${formatPRC(numAmount)}`}
           </button>
         </>

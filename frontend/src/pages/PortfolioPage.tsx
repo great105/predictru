@@ -10,10 +10,10 @@ import { useWebApp } from "@/hooks/useWebApp";
 import type { UserOrder } from "@/types";
 
 const INTENT_LABELS: Record<string, string> = {
-  buy_yes: "Купить ДА",
-  buy_no: "Купить НЕТ",
-  sell_yes: "Продать ДА",
-  sell_no: "Продать НЕТ",
+  buy_yes: "Ставлю на ДА",
+  buy_no: "Ставлю на НЕТ",
+  sell_yes: "Продаю ДА",
+  sell_no: "Продаю НЕТ",
 };
 
 const INTENT_COLORS: Record<string, string> = {
@@ -114,7 +114,7 @@ export function PortfolioPage() {
     <div className="px-4 py-4">
       {/* Balance card */}
       <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-5 text-white mb-4">
-        <div className="text-sm opacity-80">Твой баланс</div>
+        <div className="text-sm opacity-80">На счету 🪙</div>
         <div className="text-3xl font-bold mt-1">
           {formatPRC(user?.balance ?? 0)}
         </div>
@@ -133,10 +133,10 @@ export function PortfolioPage() {
             }`}
           >
             {t === "active"
-              ? "Активные"
+              ? "Сейчас"
               : t === "orders"
-              ? `В ожидании${openOrders?.length ? ` (${openOrders.length})` : ""}`
-              : "Завершённые"}
+              ? `Заявки${openOrders?.length ? ` (${openOrders.length})` : ""}`
+              : "Результаты"}
           </button>
         ))}
       </div>
@@ -154,7 +154,7 @@ export function PortfolioPage() {
             ))}
             {!ordersLoading && (!openOrders || openOrders.length === 0) && (
               <div className="text-center text-tg-hint py-12">
-                Нет ставок в ожидании
+                Нет активных заявок
               </div>
             )}
           </>
@@ -170,8 +170,8 @@ export function PortfolioPage() {
             {!isLoading && (!filtered || filtered.length === 0) && (
               <div className="text-center text-tg-hint py-12">
                 {tab === "active"
-                  ? "У тебя пока нет ставок"
-                  : "Пока нет завершённых ставок"}
+                  ? "Ты ещё не делал прогнозов. Выбери вопрос и попробуй!"
+                  : "Пока нет результатов"}
               </div>
             )}
           </>

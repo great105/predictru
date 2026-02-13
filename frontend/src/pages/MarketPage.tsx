@@ -12,9 +12,9 @@ import { useWebApp } from "@/hooks/useWebApp";
 import { categoryIcon, formatTimeLeft, formatNumber } from "@/utils/format";
 
 const STATUS_LABELS: Record<string, string> = {
-  open: "Открыт",
-  trading_closed: "Торги закрыты",
-  resolved: "Завершён",
+  open: "Идёт",
+  trading_closed: "Ожидает результат",
+  resolved: "Результат есть",
   cancelled: "Отменён",
 };
 
@@ -68,11 +68,6 @@ export function MarketPage() {
           >
             {STATUS_LABELS[market.status] ?? market.status}
           </span>
-          {isClob && (
-            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700">
-              CLOB
-            </span>
-          )}
         </div>
         <h1 className="text-xl font-bold leading-tight">{market.title}</h1>
         {market.description && (
@@ -85,17 +80,17 @@ export function MarketPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 text-center">
         <div className="bg-tg-secondary rounded-lg p-2">
-          <div className="text-xs text-tg-hint">Объём</div>
+          <div className="text-xs text-tg-hint">Ставок на</div>
           <div className="text-sm font-semibold">
             {formatNumber(market.total_volume)}
           </div>
         </div>
         <div className="bg-tg-secondary rounded-lg p-2">
-          <div className="text-xs text-tg-hint">Игроки</div>
+          <div className="text-xs text-tg-hint">Участники</div>
           <div className="text-sm font-semibold">{market.total_traders}</div>
         </div>
         <div className="bg-tg-secondary rounded-lg p-2">
-          <div className="text-xs text-tg-hint">До закрытия</div>
+          <div className="text-xs text-tg-hint">Осталось</div>
           <div className="text-sm font-semibold">
             {formatTimeLeft(market.closes_at)}
           </div>
@@ -105,7 +100,7 @@ export function MarketPage() {
       {/* Price chart (LMSR only — CLOB markets use order book) */}
       {!isClob && (
         <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-          <h3 className="text-sm font-semibold mb-2">История цены</h3>
+          <h3 className="text-sm font-semibold mb-2">Как менялось мнение</h3>
           <PriceChart data={history ?? []} />
         </div>
       )}
@@ -125,7 +120,7 @@ export function MarketPage() {
       {market.resolution_source && (
         <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
           <h3 className="text-sm font-semibold mb-1.5 flex items-center gap-1.5">
-            <span className="text-base">&#9878;</span> Правила
+            📋 Как определяется результат
           </h3>
           <p className="text-xs text-tg-hint leading-relaxed whitespace-pre-line">
             {market.resolution_source}
@@ -137,7 +132,7 @@ export function MarketPage() {
       {market.status === "resolved" && (
         <div className="bg-blue-50 rounded-xl p-4 text-center">
           <div className="text-sm text-blue-700 font-medium">
-            Результат:{" "}
+            ✅ Ответ:{" "}
             <span className="font-bold">
               {market.resolution_outcome === "yes" ? "ДА" : market.resolution_outcome === "no" ? "НЕТ" : market.resolution_outcome}
             </span>

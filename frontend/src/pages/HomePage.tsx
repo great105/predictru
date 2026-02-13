@@ -6,7 +6,6 @@ import { MarketCardSkeleton } from "@/components/Skeleton";
 
 export function HomePage() {
   const [category, setCategory] = useState("all");
-  const [ammFilter, setAmmFilter] = useState<"all" | "clob" | "lmsr">("all");
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useMarkets(category === "all" ? undefined : category);
 
@@ -25,31 +24,11 @@ export function HomePage() {
     [isFetchingNextPage, hasNextPage, fetchNextPage]
   );
 
-  const allMarketsRaw = data?.pages.flatMap((p) => p.items) ?? [];
-  const allMarkets = ammFilter === "all"
-    ? allMarketsRaw
-    : allMarketsRaw.filter((m) => m.amm_type === ammFilter);
+  const allMarkets = data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
     <div>
       <CategoryFilter selected={category} onSelect={setCategory} />
-
-      {/* AMM type filter */}
-      <div className="flex flex-wrap gap-1.5 px-4 mt-1 mb-2">
-        {(["all", "clob", "lmsr"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setAmmFilter(t)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-              ammFilter === t
-                ? "bg-tg-button text-tg-button-text"
-                : "bg-tg-secondary text-tg-hint"
-            }`}
-          >
-            {t === "all" ? "Все" : t === "clob" ? "Order Book" : "AMM"}
-          </button>
-        ))}
-      </div>
 
       <div className="px-4 space-y-3 pb-4">
         {isLoading &&
@@ -73,7 +52,7 @@ export function HomePage() {
 
         {!isLoading && allMarkets.length === 0 && (
           <div className="text-center text-tg-hint py-12">
-            Рынки не найдены
+            Вопросов пока нет. Загляни позже!
           </div>
         )}
       </div>

@@ -34,7 +34,7 @@ export function PositionCard({ position }: PositionCardProps) {
                   won ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                 }`}
               >
-                {won ? "Выиграл" : "Проиграл"}
+                {won ? "Угадал ✅" : "Не угадал"}
               </span>
             )}
           </div>
@@ -43,15 +43,15 @@ export function PositionCard({ position }: PositionCardProps) {
 
       <div className="grid grid-cols-3 gap-2 text-xs mt-3">
         <div>
-          <span className="text-tg-hint block">Количество</span>
+          <span className="text-tg-hint block">Штук</span>
           <span className="font-medium">{Number(position.shares).toFixed(2)}</span>
         </div>
         <div>
-          <span className="text-tg-hint block">Ставка</span>
+          <span className="text-tg-hint block">Потрачено</span>
           <span className="font-medium">{formatPRC(position.total_cost)}</span>
         </div>
         <div>
-          <span className="text-tg-hint block">{isResolved ? "Результат" : "Коэфф."}</span>
+          <span className="text-tg-hint block">{isResolved ? "Результат" : "Множ."}</span>
           {isResolved ? (
             <span className={`font-medium ${profit >= 0 ? "text-yes-dark" : "text-no-dark"}`}>
               {profit >= 0 ? "+" : ""}{formatPRC(profit)}

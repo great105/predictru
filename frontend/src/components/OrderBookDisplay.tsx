@@ -15,7 +15,7 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
   if (isLoading || !book) {
     return (
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <h3 className="text-sm font-semibold mb-3">Order Book</h3>
+        <h3 className="text-sm font-semibold mb-3">Книга заявок</h3>
         <div className="text-center text-tg-hint text-sm py-8">Загрузка...</div>
       </div>
     );
@@ -37,7 +37,7 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-      <h3 className="text-sm font-semibold mb-3">Order Book</h3>
+      <h3 className="text-sm font-semibold mb-3">Книга заявок</h3>
 
       {/* Header */}
       <div className="flex justify-between text-xs text-tg-hint mb-1 px-1">
@@ -48,7 +48,7 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
       {/* Asks (sell side) — red, sorted high to low */}
       <div className="space-y-px mb-1">
         {asks.length === 0 ? (
-          <div className="text-xs text-tg-hint text-center py-2">Нет предложений</div>
+          <div className="text-xs text-tg-hint text-center py-2">Пока нет продавцов</div>
         ) : (
           asks.map((level, i) => (
             <button
@@ -76,13 +76,13 @@ export function OrderBookDisplay({ marketId }: OrderBookDisplayProps) {
         <span className="text-sm font-bold">
           {book.last_price ? formatPercent(book.last_price) : "—"}
         </span>
-        <span className="text-xs text-tg-hint ml-1">последняя</span>
+        <span className="text-xs text-tg-hint ml-1">последняя сделка</span>
       </div>
 
       {/* Bids (buy side) — green, sorted high to low */}
       <div className="space-y-px mt-1">
         {bids.length === 0 ? (
-          <div className="text-xs text-tg-hint text-center py-2">Нет заявок</div>
+          <div className="text-xs text-tg-hint text-center py-2">Пока нет покупателей</div>
         ) : (
           bids.map((level, i) => (
             <button

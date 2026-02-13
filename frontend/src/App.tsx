@@ -61,7 +61,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
             borderRadius: "50%",
             margin: "0 auto 12px",
           }} />
-          <p style={{ color: "#999" }}>Loading...</p>
+          <p style={{ color: "#999" }}>Загрузка...</p>
         </div>
       </div>
     );
@@ -78,7 +78,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         <div>
           <h1 style={{ fontSize: 24, fontWeight: "bold", marginBottom: 8 }}>PredictRu</h1>
           <p style={{ color: "var(--tg-theme-hint-color, #999)" }}>
-            {error || "Please open this app from Telegram"}
+            {error || "Откройте приложение из Telegram"}
           </p>
           <p style={{ color: "#666", fontSize: 12, marginTop: 16 }}>
             initData: {window.Telegram?.WebApp?.initData ? "present" : "missing"}

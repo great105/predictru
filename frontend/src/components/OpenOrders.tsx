@@ -8,10 +8,10 @@ interface OpenOrdersProps {
 }
 
 const INTENT_LABELS: Record<string, string> = {
-  buy_yes: "Купить ДА",
-  buy_no: "Купить НЕТ",
-  sell_yes: "Продать ДА",
-  sell_no: "Продать НЕТ",
+  buy_yes: "Ставлю на ДА",
+  buy_no: "Ставлю на НЕТ",
+  sell_yes: "Продаю ДА",
+  sell_no: "Продаю НЕТ",
 };
 
 const INTENT_COLORS: Record<string, string> = {
@@ -97,7 +97,7 @@ export function OpenOrders({ marketId }: OpenOrdersProps) {
   if (isLoading) {
     return (
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <h3 className="text-sm font-semibold mb-2">Open Orders</h3>
+        <h3 className="text-sm font-semibold mb-2">Твои заявки</h3>
         <div className="text-center text-tg-hint text-sm py-4">Загрузка...</div>
       </div>
     );
@@ -110,7 +110,7 @@ export function OpenOrders({ marketId }: OpenOrdersProps) {
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
       <h3 className="text-sm font-semibold mb-2">
-        Open Orders ({orders.length})
+        Твои заявки ({orders.length})
       </h3>
       <div>
         {orders.map((order) => (

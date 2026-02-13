@@ -6,17 +6,17 @@ import { Skeleton } from "@/components/Skeleton";
 import { formatPRC, formatPercent } from "@/utils/format";
 
 const TX_TYPE_LABELS: Record<string, string> = {
-  buy: "Покупка",
+  buy: "Ставка",
   sell: "Продажа",
   payout: "Выплата",
   bonus: "Бонус",
   referral: "Реферал",
-  daily: "Ежедневный",
+  daily: "Ежедневный бонус",
   fee: "Комиссия",
   deposit: "Пополнение",
   withdraw: "Вывод",
   order_fill: "Сделка",
-  order_cancel: "Отмена ставки",
+  order_cancel: "Отмена",
 };
 
 export function ProfilePage() {
@@ -64,13 +64,13 @@ export function ProfilePage() {
       {/* Stats grid */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-          <div className="text-xs text-tg-hint">Баланс</div>
+          <div className="text-xs text-tg-hint">На счету</div>
           <div className="text-lg font-bold">{formatPRC(user.balance)}</div>
           <button
             onClick={() => setShowDeposit(!showDeposit)}
             className="mt-2 w-full py-1.5 bg-primary-600 text-white rounded-lg text-xs font-medium"
           >
-            Пополнить
+            Добавить 🪙
           </button>
           {showDeposit && (
             <div className="mt-2 flex gap-2">
@@ -95,7 +95,7 @@ export function ProfilePage() {
           )}
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-          <div className="text-xs text-tg-hint">Прибыль</div>
+          <div className="text-xs text-tg-hint">Заработок</div>
           <div
             className={`text-lg font-bold ${
               (user.total_profit ?? 0) >= 0 ? "text-yes-dark" : "text-no-dark"
@@ -106,11 +106,11 @@ export function ProfilePage() {
           </div>
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-          <div className="text-xs text-tg-hint">Ставок</div>
+          <div className="text-xs text-tg-hint">Прогнозов</div>
           <div className="text-lg font-bold">{user.total_trades ?? 0}</div>
         </div>
         <div className="bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-          <div className="text-xs text-tg-hint">Процент побед</div>
+          <div className="text-xs text-tg-hint">Угадано</div>
           <div className="text-lg font-bold">
             {formatPercent((user.win_rate ?? 0) / 100)}
           </div>
@@ -119,7 +119,7 @@ export function ProfilePage() {
 
       {/* Referral */}
       <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-        <h3 className="text-sm font-semibold mb-2">Реферальный код</h3>
+        <h3 className="text-sm font-semibold mb-2">Пригласи друга</h3>
         <div className="flex items-center gap-2">
           <code className="flex-1 min-w-0 truncate bg-tg-secondary rounded px-3 py-2 text-sm font-mono">
             {user.referral_code}
@@ -128,17 +128,17 @@ export function ProfilePage() {
             onClick={() => navigator.clipboard.writeText(user.referral_code)}
             className="px-3 py-2 bg-tg-button text-tg-button-text rounded text-sm"
           >
-            Копировать
+            📋 Скопировать
           </button>
         </div>
         <div className="text-xs text-tg-hint mt-2">
-          Рефералов: {user.referral_count} | Приглашай друзей — 100 PRC за каждого
+          Приглашённых: {user.referral_count} · За каждого друга — 🪙 100 PRC
         </div>
       </div>
 
       {/* Transaction history */}
       <div>
-        <h3 className="text-sm font-semibold mb-3">Последние операции</h3>
+        <h3 className="text-sm font-semibold mb-3">История</h3>
         <div className="space-y-2">
           {isLoading &&
             Array.from({ length: 5 }).map((_, i) => (
@@ -169,7 +169,7 @@ export function ProfilePage() {
 
           {!isLoading && (!transactions || transactions.length === 0) && (
             <div className="text-center text-tg-hint py-8">
-              Операций пока нет
+              Пока пусто
             </div>
           )}
         </div>

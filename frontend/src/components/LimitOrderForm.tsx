@@ -79,7 +79,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
   if (market.status !== "open") {
     return (
       <div className="p-4 text-center text-tg-hint">
-        Торговля закрыта для этого рынка
+        Ставки больше не принимаются
       </div>
     );
   }
@@ -102,7 +102,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
               : "bg-tg-secondary text-tg-hint"
           }`}
         >
-          BUY
+          КУПИТЬ
         </button>
         <button
           onClick={() => {
@@ -115,7 +115,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
               : "bg-tg-secondary text-tg-hint"
           }`}
         >
-          SELL
+          ПРОДАТЬ
         </button>
       </div>
 
@@ -132,7 +132,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
               : "bg-tg-secondary text-tg-hint"
           }`}
         >
-          YES
+          ДА
         </button>
         <button
           onClick={() => {
@@ -145,21 +145,21 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
               : "bg-tg-secondary text-tg-hint"
           }`}
         >
-          NO
+          НЕТ
         </button>
       </div>
 
       {/* Hint when no price set */}
       {!price && (
         <p className="text-xs text-tg-hint text-center py-1">
-          Нажми на цену в книге ордеров
+          Нажми на цену выше ☝️
         </p>
       )}
 
       {/* Price stepper */}
       <div>
         <label className="text-xs text-tg-hint block mb-1">
-          Цена (0.01 — 0.99)
+          Вероятность (1% — 99%)
         </label>
         <div className="flex items-center gap-2">
           <button
@@ -190,7 +190,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
 
       {/* Quantity */}
       <div>
-        <label className="text-xs text-tg-hint block mb-1">Количество</label>
+        <label className="text-xs text-tg-hint block mb-1">Сколько ставишь</label>
         <input
           type="number"
           inputMode="decimal"
@@ -230,7 +230,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
       {canSubmit && (
         <div className="bg-tg-secondary rounded-xl p-3 text-sm space-y-1">
           <div className="flex justify-between">
-            <span className="text-tg-hint">Стоимость</span>
+            <span className="text-tg-hint">Итого</span>
             <span className="font-medium">{formatPRC(cost)}</span>
           </div>
           <div className="flex justify-between">
@@ -238,12 +238,12 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
             <span className="text-tg-hint">~{formatPRC(fee)}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-tg-hint">Коэффициент</span>
+            <span className="text-tg-hint">Множитель</span>
             <span className="font-medium">x{mult.toFixed(2)}</span>
           </div>
           <div className="flex justify-between border-t border-gray-200 pt-1">
             <span className="text-tg-hint font-medium">
-              Прибыль (если угадал)
+              Прибыль (если угадаешь)
             </span>
             <span
               className={`font-bold ${isYes ? "text-green-600" : "text-red-600"}`}
@@ -252,7 +252,7 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
             </span>
           </div>
           <div className="flex justify-between opacity-50">
-            <span className="text-tg-hint">Баланс</span>
+            <span className="text-tg-hint">На счету</span>
             <span>{formatPRC(user?.balance ?? 0)}</span>
           </div>
         </div>
@@ -267,8 +267,8 @@ export function LimitOrderForm({ market }: LimitOrderFormProps) {
         }`}
       >
         {placeOrderMutation.isPending
-          ? "Отправка..."
-          : `${isBuy ? "Купить" : "Продать"} ${isYes ? "YES" : "NO"} — ${formatPRC(cost)}`}
+          ? "Отправляем..."
+          : `${isBuy ? "Ставлю на" : "Продаю"} ${isYes ? "ДА" : "НЕТ"} — ${formatPRC(cost)}`}
       </button>
     </div>
   );
