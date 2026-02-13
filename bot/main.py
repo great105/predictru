@@ -33,15 +33,16 @@ async def on_startup(app: web.Application):
 
     await bot.set_my_commands(
         [
-            BotCommand(command="start", description=f"{E.ROCKET} Начать"),
-            BotCommand(command="balance", description=f"{E.MONEY} Мой баланс"),
+            BotCommand(command="start", description=f"{E.CRYSTAL} Начать"),
+            BotCommand(command="balance", description=f"{E.COIN} Мой счёт"),
+            BotCommand(command="help", description=f"{E.THINKING} Как играть"),
         ]
     )
 
     try:
         await bot.set_chat_menu_button(
             menu_button=MenuButtonWebApp(
-                text=f"{E.CHART} ПредскажиРу",
+                text=f"{E.CRYSTAL} ПредскажиРу",
                 web_app=WebAppInfo(url=settings.WEBAPP_URL),
             )
         )
@@ -51,17 +52,19 @@ async def on_startup(app: web.Application):
     try:
         await bot.set_my_description(
             description=(
-                f"{E.CHART} ПредскажиРу — рынок предсказаний нового поколения!\n\n"
-                "Торгуй прогнозами на реальные события: "
-                "политика, спорт, крипто, экономика.\n\n"
-                f"{E.TARGET} Делай точные предсказания\n"
-                f"{E.MONEY} Зарабатывай PRC-токены\n"
-                f"{E.TROPHY} Соревнуйся с трейдерами"
+                "Угадывай события {DASH} зарабатывай монеты!\n\n"
+                "ПредскажиРу {DASH} это игра в прогнозы. "
+                "Выбирай вопрос о политике, спорте или "
+                "экономике, ставь на ДА или НЕТ.\n\n"
+                "Угадал {DASH} забираешь монеты!\n\n"
+                "{GIFT} 1 000 монет на старте {DASH} бесплатно"
             )
+            .replace("{DASH}", E.DASH)
+            .replace("{GIFT}", E.GIFT)
         )
         await bot.set_my_short_description(
             short_description=(
-                f"{E.CHART} Рынок предсказаний — торгуй прогнозами на реальные события"
+                f"{E.CRYSTAL} Угадывай события {E.DASH} зарабатывай монеты!"
             )
         )
     except Exception as e:

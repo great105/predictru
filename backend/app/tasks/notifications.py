@@ -9,7 +9,7 @@ from app.tasks.broker import broker
 logger = logging.getLogger(__name__)
 
 
-def _outcome_label(outcome: str) -> str:
+def _answer_label(outcome: str) -> str:
     return "ДА" if outcome.lower() == "yes" else "НЕТ"
 
 
@@ -24,17 +24,17 @@ async def send_resolution_notifications(
     """Send notifications to all participants of a resolved market."""
     bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
     safe_title = html.escape(market_title)
-    label = _outcome_label(outcome)
+    answer = _answer_label(outcome)
 
     try:
         for winner in winners:
             try:
                 text = (
-                    f"🎉 <b>Твой прогноз сбылся!</b>\n\n"
-                    f"📌 {safe_title}\n"
-                    f"🎯 Исход: <b>{label}</b>\n"
-                    f"💰 Выплата: <b>+{winner['payout']:.2f} PRC</b>\n\n"
-                    f"🔥 Так держать!"
+                    f"🎉 <b>Ты угадал!</b>\n\n"
+                    f"❓ «{safe_title}»\n"
+                    f"✅ Ответ: <b>{answer}</b>\n\n"
+                    f"💰 Тебе начислено: <b>+{winner['payout']:,.0f} PRC</b>\n\n"
+                    f"🔥 Отличная интуиция!"
                 )
                 await bot.send_message(
                     winner["telegram_id"], text, parse_mode="HTML"
@@ -45,10 +45,11 @@ async def send_resolution_notifications(
         for loser in losers:
             try:
                 text = (
-                    f"📢 <b>Рынок закрыт</b>\n\n"
-                    f"📌 {safe_title}\n"
-                    f"🎯 Исход: <b>{label}</b>\n\n"
-                    f"💪 В следующий раз повезёт!"
+                    f"📋 <b>Результат вопроса</b>\n\n"
+                    f"❓ «{safe_title}»\n"
+                    f"✅ Ответ: <b>{answer}</b>\n\n"
+                    f"Твоя ставка не сыграла.\n"
+                    f"Но на платформе ещё много вопросов 👇"
                 )
                 await bot.send_message(
                     loser["telegram_id"], text, parse_mode="HTML"
@@ -70,15 +71,16 @@ async def send_trade_confirmation(
     """Send trade confirmation to user."""
     bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
     safe_title = html.escape(market_title)
-    label = _outcome_label(outcome)
+    side = _answer_label(outcome)
 
     try:
         text = (
-            f"✅ <b>Сделка подтверждена!</b>\n\n"
-            f"📌 {safe_title}\n"
-            f"🎯 Сторона: <b>{label}</b>\n"
-            f"📊 Акций: <b>{shares:.2f}</b>\n"
-            f"💳 Стоимость: <b>{cost:.2f} PRC</b>"
+            f"✅ <b>Прогноз принят!</b>\n\n"
+            f"❓ {safe_title}\n"
+            f"🎯 Ты поставил на: <b>{side}</b>\n"
+            f"💳 Ставка: <b>{cost:,.0f} PRC</b>\n\n"
+            f"Результат появится после закрытия вопроса.\n"
+            f"Удачи! 🍀"
         )
         await bot.send_message(telegram_id, text, parse_mode="HTML")
     except Exception as e:

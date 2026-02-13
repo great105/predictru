@@ -103,26 +103,28 @@ async def send_daily_digests() -> None:
         users = result.scalars().all()
 
     bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
+    nums = ["", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"]
     try:
         lines = [
-            "🌞 <b>Доброе утро!</b>\n",
-            "🔥 <b>Горячие рынки сегодня:</b>\n",
+            "☀️ <b>Доброе утро!</b>\n",
+            "Вот что обсуждают прямо сейчас:\n",
         ]
         for i, m in enumerate(hot_markets, 1):
             safe_title = html_mod.escape(m.title)
-            volume = float(m.total_volume) if m.total_volume else 0
+            price_pct = float(m.price_yes) * 100 if m.price_yes else 50
+            num = nums[i] if i < len(nums) else f"<b>{i}.</b>"
             lines.append(
-                f"  <b>{i}.</b> {safe_title}\n"
-                f"     📊 Объём: <b>{volume:,.0f} PRC</b>\n"
+                f"{num} {safe_title}\n"
+                f"     → <b>{price_pct:.0f}%</b> думают что ДА\n"
             )
-        lines.append("\n👇 Открой приложение и торгуй!")
+        lines.append("Согласен? Поставь свой прогноз 👇")
         text = "\n".join(lines)
 
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🚀 Открыть приложение",
+                        text="▶️ Сделать прогноз",
                         callback_data="open_market:home",
                     )
                 ]

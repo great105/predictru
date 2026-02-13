@@ -1,8 +1,8 @@
 import json
 
-from aiogram import Router
-from aiogram.filters import CommandStart
-from aiogram.types import Message
+from aiogram import Router, F
+from aiogram.filters import CommandStart, Command
+from aiogram.types import Message, CallbackQuery
 from redis.asyncio import Redis
 
 from config import settings
@@ -67,3 +67,22 @@ async def cmd_start(message: Message):
         reply_markup=Kb.start(webapp_url, web_url),
         parse_mode="HTML",
     )
+
+
+@router.message(Command("help"))
+async def cmd_help(message: Message):
+    await message.answer(
+        Msg.how_it_works(),
+        reply_markup=Kb.how_it_works(settings.WEBAPP_URL),
+        parse_mode="HTML",
+    )
+
+
+@router.callback_query(F.data == "how_it_works")
+async def cb_how_it_works(callback: CallbackQuery):
+    await callback.message.answer(
+        Msg.how_it_works(),
+        reply_markup=Kb.how_it_works(settings.WEBAPP_URL),
+        parse_mode="HTML",
+    )
+    await callback.answer()

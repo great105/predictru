@@ -14,21 +14,32 @@ class Kb:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=f"{E.ROCKET} Открыть приложение",
+                        text=f"{E.PLAY} Начать играть",
                         web_app=WebAppInfo(url=webapp_url),
                     )
                 ],
                 [
                     InlineKeyboardButton(
-                        text=f"{E.GLOBE} Веб-версия",
+                        text=f"{E.THINKING} Как это работает?",
+                        callback_data="how_it_works",
+                    ),
+                    InlineKeyboardButton(
+                        text=f"{E.GLOBE} Сайт",
                         url=web_url,
-                    )
+                    ),
                 ],
+            ]
+        )
+
+    @staticmethod
+    def how_it_works(webapp_url: str) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=f"{E.MONEY} Мой баланс",
-                        callback_data="quick_balance",
-                    ),
+                        text=f"{E.PLAY} Попробовать",
+                        web_app=WebAppInfo(url=webapp_url),
+                    )
                 ],
             ]
         )
@@ -39,13 +50,13 @@ class Kb:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=f"{E.BRIEFCASE} Мой портфель",
+                        text=f"{E.CHART} Мои прогнозы",
                         web_app=WebAppInfo(url=f"{webapp_url}/portfolio"),
                     )
                 ],
                 [
                     InlineKeyboardButton(
-                        text=f"{E.HOUSE} На главную",
+                        text=f"{E.CRYSTAL} Все вопросы",
                         web_app=WebAppInfo(url=webapp_url),
                     )
                 ],
@@ -58,8 +69,8 @@ class Kb:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=f"{E.CHART_UP} Посмотреть рынок",
-                        callback_data=f"open_market:{market_id}",
+                        text=f"{E.CRYSTAL} Новые вопросы",
+                        callback_data="open_market:home",
                     )
                 ],
                 [
@@ -77,7 +88,7 @@ class Kb:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=f"{E.ROCKET} Открыть приложение",
+                        text=f"{E.PLAY} Сделать прогноз",
                         callback_data="open_market:home",
                     )
                 ]
@@ -90,7 +101,7 @@ class Kb:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=f"{E.ROCKET} Открыть",
+                        text=f"{E.PLAY} Открыть",
                         web_app=WebAppInfo(url=webapp_url),
                     )
                 ]

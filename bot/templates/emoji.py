@@ -4,38 +4,57 @@
 class E:
     """Emoji constants grouped by category."""
 
-    # Brand
-    CHART = "📊"
-    ROCKET = "🚀"
+    # Brand / core
+    CRYSTAL = "🔮"
+    GAME = "🎮"
+    GIFT = "🎁"
+
+    # Questions / predictions
+    QUESTION = "❓"
     TARGET = "🎯"
-    TROPHY = "🏆"
+    THINKING = "🤔"
 
     # Money
     MONEY = "💰"
+    COIN = "🪙"
     CARD = "💳"
-    CHART_UP = "📈"
 
-    # Status
+    # Results
     SUCCESS = "✅"
     ERROR = "❌"
     WARNING = "⚠️"
+    CONFETTI = "🎉"
+    CLOVER = "🍀"
+
+    # Mood
     FIRE = "🔥"
     BULB = "💡"
     MUSCLE = "💪"
+    WAVE = "👋"
+    STAR = "⭐"
 
     # Actions
-    WAVE = "👋"
     POINT_DOWN = "👇"
-    PIN = "📌"
-    MEGAPHONE = "📢"
-    CONFETTI = "🎉"
+    POINT_RIGHT = "👉"
+    PLAY = "▶️"
 
     # Objects
-    BRIEFCASE = "💼"
-    HOUSE = "🏠"
+    SCROLL = "📋"
+    CHART = "📊"
+    PERSON = "👤"
+    SUN = "☀️"
     GLOBE = "🌐"
-    SUN = "🌞"
+    CLOCK = "⏰"
+    LOCK = "🔒"
+
+    # Numbers
+    N1 = "1️⃣"
+    N2 = "2️⃣"
+    N3 = "3️⃣"
+    N4 = "4️⃣"
+    N5 = "5️⃣"
 
     # Misc
     DOT = "•"
-    SILENT = "😶"
+    ARROW = "→"
+    DASH = "—"
