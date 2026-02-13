@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store";
 import { useEffect } from "react";
 import Layout from "./components/Layout";
+import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import MarketPage from "./pages/MarketPage";
@@ -22,6 +23,7 @@ export default function App() {
 
   return (
     <Routes>
+      <Route index element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route
         element={
@@ -30,7 +32,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<HomePage />} />
+        <Route path="app" element={<HomePage />} />
         <Route path="market/:id" element={<MarketPage />} />
         <Route path="portfolio" element={<PortfolioPage />} />
         <Route path="profile" element={<ProfilePage />} />
