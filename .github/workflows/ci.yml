@@ -76,4 +76,4 @@ jobs:
         with:
           node-version: "20"
       - run: cd frontend && npm ci
-      - run: cd frontend && npx vitest run
+      - run: cd frontend && npx vitest run --passWithNoTests

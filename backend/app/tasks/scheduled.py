@@ -114,8 +114,7 @@ async def send_daily_digests() -> None:
             price_pct = float(m.price_yes) * 100 if m.price_yes else 50
             num = nums[i] if i < len(nums) else f"<b>{i}.</b>"
             lines.append(
-                f"{num} {safe_title}\n"
-                f"     → <b>{price_pct:.0f}%</b> думают что ДА\n"
+                f"{num} {safe_title}\n     → <b>{price_pct:.0f}%</b> думают что ДА\n"
             )
         lines.append("Согласен? Поставь свой прогноз 👇")
         text = "\n".join(lines)
@@ -135,7 +134,8 @@ async def send_daily_digests() -> None:
         for user in users:
             try:
                 await bot.send_message(
-                    user.telegram_id, text,
+                    user.telegram_id,
+                    text,
                     reply_markup=keyboard,
                     parse_mode="HTML",
                 )

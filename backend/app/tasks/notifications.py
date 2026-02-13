@@ -36,9 +36,7 @@ async def send_resolution_notifications(
                     f"💰 Тебе начислено: <b>+{winner['payout']:,.0f} PRC</b>\n\n"
                     f"🔥 Отличная интуиция!"
                 )
-                await bot.send_message(
-                    winner["telegram_id"], text, parse_mode="HTML"
-                )
+                await bot.send_message(winner["telegram_id"], text, parse_mode="HTML")
             except Exception as e:
                 logger.error(f"Failed to notify winner {winner['telegram_id']}: {e}")
 
@@ -51,9 +49,7 @@ async def send_resolution_notifications(
                     f"Твоя ставка не сыграла.\n"
                     f"Но на платформе ещё много вопросов 👇"
                 )
-                await bot.send_message(
-                    loser["telegram_id"], text, parse_mode="HTML"
-                )
+                await bot.send_message(loser["telegram_id"], text, parse_mode="HTML")
             except Exception as e:
                 logger.error(f"Failed to notify loser {loser['telegram_id']}: {e}")
     finally:
