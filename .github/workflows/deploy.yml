@@ -29,6 +29,7 @@ jobs:
             docker compose up -d --remove-orphans --force-recreate nginx
             docker compose restart nginx
             sleep 5
+            docker compose exec -T api alembic upgrade head || true
             docker compose exec -T api python scripts/seed_markets.py || true
             docker image prune -f
 

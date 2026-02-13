@@ -3,18 +3,20 @@ import { useWebApp } from "@/hooks/useWebApp";
 
 interface ShareInviteProps {
   inviteCode: string;
+  title: string;
   botUsername?: string;
 }
 
-export function ShareInvite({ inviteCode, botUsername = "predskazu_bot" }: ShareInviteProps) {
+export function ShareInvite({ inviteCode, title, botUsername = "predskazu_bot" }: ShareInviteProps) {
   const { haptic, webApp } = useWebApp();
   const [copied, setCopied] = useState(false);
 
-  const shareLink = `https://t.me/${botUsername}?start=bet_${inviteCode}`;
+  // Direct Mini App link — one tap opens the bet join page
+  const directLink = `https://t.me/${botUsername}?start=bet_${inviteCode}`;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(inviteCode);
+      await navigator.clipboard.writeText(directLink);
       setCopied(true);
       haptic?.notificationOccurred("success");
       setTimeout(() => setCopied(false), 2000);
@@ -26,34 +28,44 @@ export function ShareInvite({ inviteCode, botUsername = "predskazu_bot" }: Share
   const handleShare = () => {
     haptic?.impactOccurred("medium");
     if (webApp) {
+      const text = `${title}\n\nПрисоединяйся к спору!`;
       webApp.openTelegramLink(
-        `https://t.me/share/url?url=${encodeURIComponent(shareLink)}&text=${encodeURIComponent("Присоединяйся к спору! Код: " + inviteCode)}`
+        `https://t.me/share/url?url=${encodeURIComponent(directLink)}&text=${encodeURIComponent(text)}`
       );
     }
   };
 
   return (
     <div className="glass-card p-4 space-y-3">
-      <div className="text-xs text-tg-hint uppercase tracking-wider">Инвайт-код</div>
+      <div className="text-xs text-tg-hint uppercase tracking-wider">Пригласить друзей</div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex-1 bg-white/10 rounded-lg px-4 py-3 text-center font-mono text-xl tracking-[0.3em] font-bold">
-          {inviteCode}
-        </div>
+      {/* Direct link */}
+      <div
+        onClick={handleCopy}
+        className="bg-white/10 rounded-lg px-4 py-3 text-center text-sm text-tg-link break-all cursor-pointer active:bg-white/20 transition-colors"
+      >
+        {directLink}
+      </div>
+
+      <div className="flex gap-2">
         <button
           onClick={handleCopy}
-          className="shrink-0 bg-white/10 hover:bg-white/20 rounded-lg px-4 py-3 text-sm transition-colors"
+          className="flex-1 bg-white/10 hover:bg-white/20 rounded-lg py-3 text-sm font-medium transition-colors"
         >
-          {copied ? "OK" : "Копировать"}
+          {copied ? "Скопировано!" : "Копировать ссылку"}
+        </button>
+        <button
+          onClick={handleShare}
+          className="flex-1 bg-[#2AABEE] hover:bg-[#229ED9] text-white rounded-lg py-3 text-sm font-medium transition-colors"
+        >
+          Отправить другу
         </button>
       </div>
 
-      <button
-        onClick={handleShare}
-        className="w-full bg-[#2AABEE] hover:bg-[#229ED9] text-white rounded-lg py-3 text-sm font-medium transition-colors"
-      >
-        Поделиться в Telegram
-      </button>
+      {/* Invite code as fallback */}
+      <div className="text-center text-xs text-tg-hint">
+        или код: <span className="font-mono font-bold tracking-wider">{inviteCode}</span>
+      </div>
     </div>
   );
 }

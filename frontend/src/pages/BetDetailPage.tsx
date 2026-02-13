@@ -135,7 +135,7 @@ export function BetDetailPage() {
                 >
                   {p.outcome === "yes" ? "ДА" : "НЕТ"}
                 </span>
-                {p.payout > 0 && (
+                {Number(p.payout) > 0 && (
                   <span className="text-xs text-amber-400">+{formatPRC(p.payout)}</span>
                 )}
               </div>
@@ -184,7 +184,7 @@ export function BetDetailPage() {
       )}
 
       {/* Share (only when open) */}
-      {bet.status === "open" && <ShareInvite inviteCode={bet.invite_code} />}
+      {bet.status === "open" && <ShareInvite inviteCode={bet.invite_code} title={bet.title} />}
 
       {/* Timing */}
       <div className="text-center text-xs text-tg-hint space-y-1">
